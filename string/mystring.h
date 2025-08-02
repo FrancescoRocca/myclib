@@ -16,11 +16,12 @@ typedef struct mcl_string_t {
  * @brief Create a new string
  *
  * @param text The text to initialize from
+ * @param initial_capacity The initial capacity, pass -1 to retrieve it from the text
  * @return Pointer to the new string, or NULL on failure
  *
- * @note The caller is responsible for freeing the returned string with mcl_string_free()
+ * @note The caller is responsible for freeing the returned string with mcl_string_free() and to pass the right inital_capacity
  */
-mcl_string *mcl_string_new(const char *text);
+mcl_string *mcl_string_new(const char *text, long initial_capacity);
 
 /**
  * @brief Append text to an existing string

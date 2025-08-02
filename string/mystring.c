@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-mcl_string *mcl_string_new(const char *text) {
+mcl_string *mcl_string_new(const char *text, long initial_capacity) {
 	if (!text) {
 		return NULL;
 	}
@@ -17,8 +17,16 @@ mcl_string *mcl_string_new(const char *text) {
 
 	/* Calculate size and capacity */
 	str->size = strlen(text);
+	size_t capacity = initial_capacity;
 
-	size_t capacity = (unsigned long)pow(2, (unsigned)log2(str->size) + 1);
+	if (capacity != -1 && capacity - 1 < str->size) {
+		return NULL;
+	}
+
+	if (capacity == -1) {
+		capacity = (unsigned long)pow(2, (unsigned)log2(str->size) + 1);
+	}
+
 	str->capacity = capacity;
 
 	/* Allocate data buffer */
