@@ -8,3 +8,4 @@ It is not production-ready. Use at your own risk.
 - Hashmaps - Thread-safe (MT Safe)
 - Dynamic strings - Not thread-safe (MT Unsafe)
   > Requires linking with the C math library (`-lm`)
+- Circular Queue - Not thread-safe (MT Unsafe)

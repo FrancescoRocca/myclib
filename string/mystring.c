@@ -5,13 +5,13 @@
 #include <string.h>
 
 mcl_string *mcl_string_new(const char *text, long initial_capacity) {
-	if (!text) {
+	if (text == NULL) {
 		return NULL;
 	}
 
 	/* Allocate string struct */
 	mcl_string *str = malloc(sizeof(mcl_string));
-	if (!str) {
+	if (str == NULL) {
 		return NULL;
 	}
 
@@ -31,7 +31,7 @@ mcl_string *mcl_string_new(const char *text, long initial_capacity) {
 
 	/* Allocate data buffer */
 	str->data = malloc(sizeof(char) * str->capacity);
-	if (!str->data) {
+	if (str->data == NULL) {
 		free(str);
 
 		return NULL;
@@ -46,7 +46,7 @@ mcl_string *mcl_string_new(const char *text, long initial_capacity) {
 }
 
 int mcl_string_append(mcl_string *string, const char *text) {
-	if (!string || !text) {
+	if (string == NULL || text == NULL) {
 		return -1;
 	}
 
@@ -83,7 +83,7 @@ int mcl_string_append(mcl_string *string, const char *text) {
 }
 
 void mcl_string_free(mcl_string *string) {
-	if (!string) {
+	if (string == NULL) {
 		return;
 	}
 
@@ -95,7 +95,7 @@ void mcl_string_free(mcl_string *string) {
 }
 
 size_t mcl_string_length(const mcl_string *string) {
-	if (!string) {
+	if (string == NULL) {
 		return 0;
 	}
 
@@ -103,7 +103,7 @@ size_t mcl_string_length(const mcl_string *string) {
 }
 
 size_t mcl_string_capacity(const mcl_string *string) {
-	if (!string) {
+	if (string == NULL) {
 		return 0;
 	}
 
@@ -111,7 +111,7 @@ size_t mcl_string_capacity(const mcl_string *string) {
 }
 
 const char *mcl_string_cstr(const mcl_string *string) {
-	if (!string || !string->data) {
+	if (string == NULL || string->data == NULL) {
 		return "";
 	}
 
