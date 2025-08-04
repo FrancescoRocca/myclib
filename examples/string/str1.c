@@ -1,11 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "../../string/mystring.h"
 
 int main(void) {
 	size_t length;
 	size_t capacity;
-	const char *c_str;
+	char *c_str;
 
 	/* Allocate a new dynamic string with an initial capacity */
 	/* Always remember to check return values */
@@ -16,6 +17,7 @@ int main(void) {
 	length = mcl_string_length(str);
 	capacity = mcl_string_capacity(str);
 	printf("%s\nlength: %ld, capacity: %ld\n", c_str, length, capacity);
+	free(c_str);
 
 	/* Append text to a mcl_string */
 	mcl_string_append(str, " How are you?");
@@ -25,6 +27,7 @@ int main(void) {
 	length = mcl_string_length(str);
 	capacity = mcl_string_capacity(str);
 	printf("%s\nsize: %ld, cap: %ld\n", c_str, length, capacity);
+	free(c_str);
 
 	/* Always deallocate memory */
 	mcl_string_free(str);

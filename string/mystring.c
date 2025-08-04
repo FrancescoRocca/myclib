@@ -1,11 +1,21 @@
 #include "mystring.h"
 
-#include <math.h>
-#include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
 
-mcl_string *mcl_string_new(const char *text, long initial_capacity) {
+static size_t mcl_next_power_two(size_t len) {
+	len--;
+	len |= len >> 1;
+	len |= len >> 2;
+	len |= len >> 4;
+	len |= len >> 8;
+	len |= len >> 16;
+	len++;
+
+	return len;
+}
+
+mcl_string *mcl_string_new(const char *text, size_t initial_capacity) {
 	if (text == NULL) {
 		return NULL;
 	}
@@ -16,26 +26,18 @@ mcl_string *mcl_string_new(const char *text, long initial_capacity) {
 		return NULL;
 	}
 
-	/* Init pthread mutex */
-	int ret = pthread_mutex_init(&str->lock, NULL);
-	if (ret != 0) {
-		free(str);
-
-		return NULL;
-	}
-
 	/* Calculate size and capacity */
 	str->size = strlen(text);
 	size_t capacity = initial_capacity;
 
-	if (capacity != -1 && capacity - 1 < str->size) {
+	if (capacity != 0 && capacity - 1 < str->size) {
 		free(str);
 
 		return NULL;
 	}
 
-	if (capacity == -1) {
-		capacity = (unsigned long)pow(2, (unsigned)log2(str->size) + 1);
+	if (capacity == 0) {
+		capacity = mcl_next_power_two(str->size + 1);
 	}
 
 	str->capacity = capacity;
@@ -49,9 +51,17 @@ mcl_string *mcl_string_new(const char *text, long initial_capacity) {
 	}
 
 	/* Copy the text and ensure null termination */
-	memset(str->data, 0, str->capacity);
 	memcpy(str->data, text, str->size);
 	str->data[str->size] = '\0';
+
+	/* Init pthread mutex */
+	int ret = pthread_mutex_init(&str->lock, NULL);
+	if (ret != 0) {
+		free(str->data);
+		free(str);
+
+		return NULL;
+	}
 
 	return str;
 }
@@ -79,7 +89,7 @@ int mcl_string_append(mcl_string *string, const char *text) {
 
 	/* Check if we need to resize */
 	if (new_size + 1 > string->capacity) {
-		size_t new_capacity = (unsigned long)pow(2, (unsigned)log2(new_size) + 1);
+		size_t new_capacity = mcl_next_power_two(new_size + 1);
 		/* Reallocate the buffer */
 		void *new_data = realloc(string->data, sizeof(char) * new_capacity);
 		if (!new_data) {
@@ -114,16 +124,10 @@ void mcl_string_free(mcl_string *string) {
 		return;
 	}
 
-	int ret = pthread_mutex_lock(&string->lock);
-	if (ret != 0) {
-		return;
-	}
-
 	if (string->data) {
 		free(string->data);
 	}
 
-	pthread_mutex_unlock(&string->lock);
 	pthread_mutex_destroy(&string->lock);
 
 	free(string);
@@ -163,9 +167,9 @@ size_t mcl_string_capacity(mcl_string *string) {
 	return cap;
 }
 
-const char *mcl_string_cstr(mcl_string *string) {
+char *mcl_string_cstr(mcl_string *string) {
 	if (string == NULL || string->data == NULL) {
-		return "";
+		return NULL;
 	}
 
 	int ret = pthread_mutex_lock(&string->lock);
@@ -173,7 +177,14 @@ const char *mcl_string_cstr(mcl_string *string) {
 		return NULL;
 	}
 
-	char *data = string->data;
+	char *data = malloc(sizeof(char) * string->size + 1);
+	if (data == NULL) {
+		pthread_mutex_unlock(&string->lock);
+
+		return NULL;
+	}
+
+	memcpy(data, string->data, string->size + 1);
 
 	pthread_mutex_unlock(&string->lock);
 
