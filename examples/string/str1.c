@@ -1,24 +1,33 @@
-#include <assert.h>
 #include <stdio.h>
 
 #include "../../string/mystring.h"
 
 int main(void) {
+	size_t length;
+	size_t capacity;
+	const char *c_str;
+
+	/* Allocate a new dynamic string with an initial capacity */
+	/* Always remember to check return values */
 	mcl_string *str = mcl_string_new("Hello, world!", 512);
-	assert(str != NULL);
 
-	printf("%s\nsize: %ld, cap: %ld\n", mcl_string_cstr(str), (long)mcl_string_length(str), (long)mcl_string_capacity(str));
-	assert(mcl_string_length(str) == 13);
+	/* Retrieve a C str from mcl_string with mcl_string_cstr() */
+	c_str = mcl_string_cstr(str);
+	length = mcl_string_length(str);
+	capacity = mcl_string_capacity(str);
+	printf("%s\nlength: %ld, capacity: %ld\n", c_str, length, capacity);
 
-	int ret = mcl_string_append(str, " How are you?");
-	assert(ret == 0);
+	/* Append text to a mcl_string */
+	mcl_string_append(str, " How are you?");
 
-	printf("After append:\n");
-	printf("%s\nsize: %ld, cap: %ld\n", mcl_string_cstr(str), (long)mcl_string_length(str), (long)mcl_string_capacity(str));
-	assert(mcl_string_length(str) == 26);
+	puts("After append:");
+	c_str = mcl_string_cstr(str);
+	length = mcl_string_length(str);
+	capacity = mcl_string_capacity(str);
+	printf("%s\nsize: %ld, cap: %ld\n", c_str, length, capacity);
 
+	/* Always deallocate memory */
 	mcl_string_free(str);
 
-	printf("All tests passed successfully.\n");
 	return 0;
 }
