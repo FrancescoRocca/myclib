@@ -7,10 +7,10 @@
 /**
  * @brief Thread-safe dynamic string structure.
  */
-typedef struct mcl_string_t {
+typedef struct mcl_string {
+	char *data;			  /**< Pointer to string data (null-terminated) */
 	size_t size;		  /**< Current length of the string (excluding null terminator) */
 	size_t capacity;	  /**< Allocated capacity including null terminator */
-	char *data;			  /**< Pointer to string data (null-terminated) */
 	pthread_mutex_t lock; /**< Mutex for thread safety */
 } mcl_string;
 
@@ -18,7 +18,8 @@ typedef struct mcl_string_t {
  * @brief Create a new string initialized with the given text.
  *
  * @param text Initial text (must not be NULL)
- * @param initial_capacity Initial buffer capacity (0 to auto-calculate)
+ * @param initial_capacity Initial buffer capacity in bytes (including null terminator).
+ *                         Pass 0 to auto-calculate the capacity.
  * @return Pointer to new string on success, or NULL on failure.
  *
  * @note Caller must release the string using mcl_string_free().
@@ -40,6 +41,8 @@ int mcl_string_append(mcl_string *string, const char *text);
  * @brief Free the string and its resources.
  *
  * @param string String to free (safe to call with NULL)
+ *
+ * @note Caller must ensure no other thread is concurrently using this mcl_string.
  */
 void mcl_string_free(mcl_string *string);
 
@@ -60,12 +63,13 @@ size_t mcl_string_length(mcl_string *string);
 size_t mcl_string_capacity(mcl_string *string);
 
 /**
- * @brief Get a copy of the string as a null-terminated C-string.
+ * @brief Get a pointer to a null-terminated C-string representing the content.
  *
- * @param string String to copy
- * @return Newly allocated copy of the string, or NULL on failure
+ * @param string String to read
+ * @return Pointer to a thread-local buffer containing the string, or NULL on failure.
  *
- * @warning Caller is responsible for freeing the returned pointer.
+ * @note The returned pointer is valid until the next call to mcl_string_cstr()
+ *       in the same thread or until the thread exits. **Do NOT free** the returned pointer.
  */
 char *mcl_string_cstr(mcl_string *string);
 
