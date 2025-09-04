@@ -1,17 +1,17 @@
 #ifndef MYCLIB_STRING_H
 #define MYCLIB_STRING_H
 
-#include <pthread.h>
 #include <stddef.h>
+#include <threads.h>
 
 /**
  * @brief Thread-safe dynamic string structure.
  */
 typedef struct mcl_string {
-	char *data;			  /**< Pointer to string data (null-terminated) */
-	size_t size;		  /**< Current length of the string (excluding null terminator) */
-	size_t capacity;	  /**< Allocated capacity including null terminator */
-	pthread_mutex_t lock; /**< Mutex for thread safety */
+	char *data;		 /**< Pointer to string data (null-terminated) */
+	size_t size;	 /**< Current length of the string (excluding null terminator) */
+	size_t capacity; /**< Allocated capacity including null terminator */
+	mtx_t lock;		 /**< Mutex for thread safety */
 } mcl_string;
 
 /**

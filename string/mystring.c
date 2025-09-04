@@ -1,13 +1,12 @@
 #include "mystring.h"
 
-#include <pthread.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
 /* Initialize Thread-Specific Data Keys */
-static pthread_key_t buffer_key;
-static pthread_once_t buffer_once = PTHREAD_ONCE_INIT;
+static tss_t buffer_key;
+static once_flag buffer_once = ONCE_FLAG_INIT;
 
 typedef struct {
 	char *buf;
@@ -23,7 +22,7 @@ static void buffer_destructor(void *buf) {
 	free(tb);
 }
 
-static void buffer_key_init(void) { pthread_key_create(&buffer_key, buffer_destructor); }
+static void buffer_key_init(void) { tss_create(&buffer_key, buffer_destructor); }
 
 /* Dynamic String library */
 size_t mcl_next_power_two(size_t len) {
@@ -79,7 +78,7 @@ mcl_string *mcl_string_new(const char *text, size_t initial_capacity) {
 	str->data[str->size] = '\0';
 
 	/* Init pthread mutex */
-	if (pthread_mutex_init(&str->lock, NULL) != 0) {
+	if (mtx_init(&str->lock, NULL) != thrd_success) {
 		free(str->data);
 		free(str);
 
@@ -95,14 +94,14 @@ int mcl_string_append(mcl_string *string, const char *text) {
 	}
 
 	/* Lock resource */
-	if (pthread_mutex_lock(&string->lock) != 0) {
+	if (mtx_lock(&string->lock) != thrd_success) {
 		return -1;
 	}
 
 	/* Handle empty case */
 	size_t text_len = strlen(text);
 	if (text_len == 0) {
-		pthread_mutex_unlock(&string->lock);
+		mtx_unlock(&string->lock);
 
 		return 0;
 	}
@@ -115,7 +114,7 @@ int mcl_string_append(mcl_string *string, const char *text) {
 		/* Reallocate the buffer */
 		void *new_data = realloc(string->data, new_capacity);
 		if (!new_data) {
-			pthread_mutex_unlock(&string->lock);
+			mtx_unlock(&string->lock);
 
 			return -1;
 		}
@@ -129,7 +128,7 @@ int mcl_string_append(mcl_string *string, const char *text) {
 	string->size = new_size;
 	string->data[string->size] = '\0';
 
-	pthread_mutex_unlock(&string->lock);
+	mtx_unlock(&string->lock);
 
 	return 0;
 }
@@ -143,7 +142,7 @@ void mcl_string_free(mcl_string *string) {
 		free(string->data);
 	}
 
-	pthread_mutex_destroy(&string->lock);
+	mtx_destroy(&string->lock);
 
 	free(string);
 }
@@ -153,13 +152,13 @@ size_t mcl_string_length(mcl_string *string) {
 		return 0;
 	}
 
-	if (pthread_mutex_lock(&string->lock) != 0) {
+	if (mtx_lock(&string->lock) != thrd_success) {
 		return 0;
 	}
 
 	size_t len = string->size;
 
-	pthread_mutex_unlock(&string->lock);
+	mtx_unlock(&string->lock);
 
 	return len;
 }
@@ -169,13 +168,13 @@ size_t mcl_string_capacity(mcl_string *string) {
 		return 0;
 	}
 
-	if (pthread_mutex_lock(&string->lock) != 0) {
+	if (mtx_lock(&string->lock) != thrd_success) {
 		return 0;
 	}
 
 	size_t cap = string->capacity;
 
-	pthread_mutex_unlock(&string->lock);
+	mtx_unlock(&string->lock);
 
 	return cap;
 }
@@ -185,19 +184,19 @@ char *mcl_string_cstr(mcl_string *string) {
 		return NULL;
 	}
 
-	pthread_once(&buffer_once, buffer_key_init);
+	call_once(&buffer_once, buffer_key_init);
 
-	if (pthread_mutex_lock(&string->lock) != 0) {
+	if (mtx_lock(&string->lock) != thrd_success) {
 		return NULL;
 	}
 
 	size_t need = string->size + 1;
 
-	tl_buffer_t *tb = (tl_buffer_t *)pthread_getspecific(buffer_key);
+	tl_buffer_t *tb = (tl_buffer_t *)tss_get(buffer_key);
 	if (tb == NULL) {
 		tb = malloc(sizeof(*tb));
 		if (tb == NULL) {
-			pthread_mutex_unlock(&string->lock);
+			mtx_unlock(&string->lock);
 
 			return NULL;
 		}
@@ -206,15 +205,15 @@ char *mcl_string_cstr(mcl_string *string) {
 		tb->buf = malloc(tb->cap);
 		if (tb->buf == NULL) {
 			free(tb);
-			pthread_mutex_unlock(&string->lock);
+			mtx_unlock(&string->lock);
 
 			return NULL;
 		}
 
-		if (pthread_setspecific(buffer_key, tb) != 0) {
+		if (tss_set(buffer_key, tb) != thrd_success) {
 			free(tb->buf);
 			free(tb);
-			pthread_mutex_unlock(&string->lock);
+			mtx_unlock(&string->lock);
 
 			return NULL;
 		}
@@ -222,7 +221,7 @@ char *mcl_string_cstr(mcl_string *string) {
 		size_t newcap = mcl_next_power_two(need);
 		char *tmp = realloc(tb->buf, newcap);
 		if (tmp == NULL) {
-			pthread_mutex_unlock(&string->lock);
+			mtx_unlock(&string->lock);
 
 			return NULL;
 		}
@@ -233,7 +232,7 @@ char *mcl_string_cstr(mcl_string *string) {
 
 	memcpy(tb->buf, string->data, need);
 
-	pthread_mutex_unlock(&string->lock);
+	mtx_unlock(&string->lock);
 
 	return tb->buf;
 }
