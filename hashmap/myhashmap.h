@@ -57,15 +57,15 @@ typedef void free_value_f(void *value);
  * and memory management, along with the bucket array.
  */
 typedef struct mcl_hashmap {
-	hash_f *hash_fn;					 /**< Hash function */
-	equal_f *equal_fn;					 /**< Equality comparison function */
-	free_key_f *free_key_fn;			 /**< Key deallocation function (optional) */
-	free_value_f *free_value_fn;		 /**< Value deallocation function (optional) */
-	size_t key_size;					 /**< Size in bytes of the key */
-	size_t value_size;					 /**< Size in bytes of the value */
-	mcl_bucket map[MYCLIB_HASHMAP_SIZE]; /**< Array of bucket chains */
-	mtx_t *locks;						 /**< Mutex array */
-	size_t num_locks;					 /**< Number of mutex */
+	hash_f *hash_fn;					   /**< Hash function */
+	equal_f *equal_fn;					   /**< Equality comparison function */
+	free_key_f *free_key_fn;			   /**< Key deallocation function (optional) */
+	free_value_f *free_value_fn;		   /**< Value deallocation function (optional) */
+	size_t key_size;					   /**< Size in bytes of the key */
+	size_t value_size;					   /**< Size in bytes of the value */
+	mcl_bucket_s map[MYCLIB_HASHMAP_SIZE]; /**< Array of bucket chains */
+	mtx_t *locks;						   /**< Mutex array */
+	size_t num_locks;					   /**< Number of mutex */
 } mcl_hashmap_s;
 
 /**
@@ -83,7 +83,7 @@ typedef struct mcl_hashmap {
  * @param[in] value_size Size in bytes of each value to be stored
  * @return A pointer to the newly initialized hash map, or NULL on failure
  */
-mcl_hashmap *mcl_hm_init(hash_f *hash_fn, equal_f *equal_fn, free_key_f *free_key_fn, free_value_f *free_value_fn, size_t key_size, size_t value_size);
+mcl_hashmap_s *mcl_hm_init(hash_f *hash_fn, equal_f *equal_fn, free_key_f *free_key_fn, free_value_f *free_value_fn, size_t key_size, size_t value_size);
 
 /**
  * @brief Free all resources used by the hash map

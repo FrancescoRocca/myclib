@@ -73,7 +73,7 @@ mcl_hashmap_s *mcl_hm_init(hash_f *hash_fn, equal_f *equal_fn, free_key_f *free_
 
 	int ret;
 	for (size_t i = 0; i < hashmap->num_locks; ++i) {
-		ret = mtx_init(&(hashmap->locks[i]), NULL);
+		ret = mtx_init(&(hashmap->locks[i]), mtx_plain);
 		if (ret != thrd_success) {
 			/* Mutex failed */
 			for (size_t j = 0; j < i; ++j) {

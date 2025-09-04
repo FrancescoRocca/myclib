@@ -16,7 +16,7 @@ mcl_queue_s *mcl_queue_init(size_t queue_size, size_t elem_size) {
 		return NULL;
 	}
 
-	int ret = mtx_init(&queue->lock, NULL);
+	int ret = mtx_init(&queue->lock, mtx_plain);
 	if (ret != thrd_success) {
 		free(queue->buffer);
 		free(queue);
@@ -47,7 +47,7 @@ int mcl_queue_push(mcl_queue_s *queue, const void *elem) {
 	}
 
 	/* Copy the elem in the buffer */
-	void *dest = (void *)queue->buffer + (queue->rear * queue->elem_size);
+	void *dest = (char *)queue->buffer + (queue->rear * queue->elem_size);
 	memcpy(dest, elem, queue->elem_size);
 
 	queue->size++;
@@ -71,7 +71,7 @@ int mcl_queue_pop(mcl_queue_s *queue, void *out_elem) {
 		return -1;
 	}
 
-	void *src = (void *)queue->buffer + (queue->front * queue->elem_size);
+	void *src = (char *)queue->buffer + (queue->front * queue->elem_size);
 	memcpy(out_elem, src, queue->elem_size);
 
 	queue->front = (queue->front + 1) % queue->capacity;
@@ -94,7 +94,7 @@ int mcl_queue_get_front(mcl_queue_s *queue, void *out) {
 		return -1;
 	}
 
-	void *front = (void *)queue->buffer + (queue->front * queue->elem_size);
+	void *front = (char *)queue->buffer + (queue->front * queue->elem_size);
 	memcpy(out, front, queue->elem_size);
 
 	mtx_unlock(&queue->lock);
@@ -121,7 +121,7 @@ int mcl_queue_get_rear(mcl_queue_s *queue, void *out) {
 		rear_index = queue->rear - 1;
 	}
 
-	void *rear = (void *)queue->buffer + (rear_index * queue->elem_size);
+	void *rear = (char *)queue->buffer + (rear_index * queue->elem_size);
 	memcpy(out, rear, queue->elem_size);
 
 	mtx_unlock(&queue->lock);

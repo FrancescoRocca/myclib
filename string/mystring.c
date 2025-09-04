@@ -78,7 +78,7 @@ mcl_string_s *mcl_string_new(const char *text, size_t initial_capacity) {
 	str->data[str->size] = '\0';
 
 	/* Init pthread mutex */
-	if (mtx_init(&str->lock, NULL) != thrd_success) {
+	if (mtx_init(&str->lock, mtx_plain) != thrd_success) {
 		free(str->data);
 		free(str);
 

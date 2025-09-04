@@ -7,7 +7,7 @@
 #define MAX_STR_LEN 64
 
 /* My custom data type stored as value */
-struct my_custom_type_t {
+struct my_custom_type {
 	int age;
 	char favourite_brand[MAX_STR_LEN];
 };
@@ -41,7 +41,7 @@ bool my_equal_fun(const void *key_a, const void *key_b) {
 void my_free_key(void *key) { free(key); }
 
 void my_free_value(void *value) {
-	struct my_custom_type_t *mct = (struct my_custom_type_t *)value;
+	struct my_custom_type *mct = (struct my_custom_type *)value;
 	free(mct);
 }
 
@@ -51,10 +51,10 @@ int main(void) {
 	/* This hashmap will contain names as keys and a custom type as value */
 	size_t key_size = sizeof(char) * MAX_STR_LEN;
 	size_t value_size = sizeof(int) + sizeof(char) * MAX_STR_LEN;
-	mcl_hashmap *map = mcl_hm_init(my_hash_func, my_equal_fun, my_free_key, my_free_value, key_size, value_size);
+	mcl_hashmap_s *map = mcl_hm_init(my_hash_func, my_equal_fun, my_free_key, my_free_value, key_size, value_size);
 
 	/* Set a new value */
-	struct my_custom_type_t p1 = {
+	struct my_custom_type p1 = {
 		.age = 21,
 	};
 	strncpy(p1.favourite_brand, "Ferrari", sizeof(p1.favourite_brand));
@@ -62,9 +62,9 @@ int main(void) {
 	mcl_hm_set(map, "John", &p1);
 
 	/* Retrieve the data */
-	mcl_bucket *john = mcl_hm_get(map, "John");
+	mcl_bucket_s *john = mcl_hm_get(map, "John");
 	char *name = (char *)john->key;
-	struct my_custom_type_t *john_v = (struct my_custom_type_t *)john->value;
+	struct my_custom_type *john_v = (struct my_custom_type *)john->value;
 	int age = john_v->age;
 	char *fav_brand = john_v->favourite_brand;
 	fprintf(stdout, "Name: %s\nAge: %d\nFavourite brand: %s\n", name, age, fav_brand);
