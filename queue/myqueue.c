@@ -1,11 +1,10 @@
 #include "myqueue.h"
 
-#include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
 
-mcl_queue *mcl_queue_init(size_t queue_size, size_t elem_size) {
-	mcl_queue *queue = malloc(sizeof(mcl_queue));
+mcl_queue_s *mcl_queue_init(size_t queue_size, size_t elem_size) {
+	mcl_queue_s *queue = malloc(sizeof(mcl_queue_s));
 	if (queue == NULL) {
 		return NULL;
 	}
@@ -17,8 +16,8 @@ mcl_queue *mcl_queue_init(size_t queue_size, size_t elem_size) {
 		return NULL;
 	}
 
-	int ret = pthread_mutex_init(&queue->lock, NULL);
-	if (ret != 0) {
+	int ret = mtx_init(&queue->lock, NULL);
+	if (ret != thrd_success) {
 		free(queue->buffer);
 		free(queue);
 
@@ -34,15 +33,15 @@ mcl_queue *mcl_queue_init(size_t queue_size, size_t elem_size) {
 	return queue;
 }
 
-int mcl_queue_push(mcl_queue *queue, const void *elem) {
-	int ret = pthread_mutex_lock(&queue->lock);
-	if (ret != 0) {
+int mcl_queue_push(mcl_queue_s *queue, const void *elem) {
+	int ret = mtx_lock(&queue->lock);
+	if (ret != thrd_success) {
 		return -1;
 	}
 
 	if (queue->size == queue->capacity) {
 		/* Queue full */
-		pthread_mutex_unlock(&queue->lock);
+		mtx_unlock(&queue->lock);
 
 		return -1;
 	}
@@ -54,20 +53,20 @@ int mcl_queue_push(mcl_queue *queue, const void *elem) {
 	queue->size++;
 	queue->rear = (queue->rear + 1) % queue->capacity;
 
-	pthread_mutex_unlock(&queue->lock);
+	mtx_unlock(&queue->lock);
 
 	return 0;
 }
 
-int mcl_queue_pop(mcl_queue *queue, void *out_elem) {
-	int ret = pthread_mutex_lock(&queue->lock);
-	if (ret != 0) {
+int mcl_queue_pop(mcl_queue_s *queue, void *out_elem) {
+	int ret = mtx_lock(&queue->lock);
+	if (ret != thrd_success) {
 		return -1;
 	}
 
 	if (queue->size == 0) {
 		/* Queue empty */
-		pthread_mutex_unlock(&queue->lock);
+		mtx_unlock(&queue->lock);
 
 		return -1;
 	}
@@ -78,19 +77,19 @@ int mcl_queue_pop(mcl_queue *queue, void *out_elem) {
 	queue->front = (queue->front + 1) % queue->capacity;
 	queue->size--;
 
-	pthread_mutex_unlock(&queue->lock);
+	mtx_unlock(&queue->lock);
 
 	return 0;
 }
 
-int mcl_queue_get_front(mcl_queue *queue, void *out) {
-	int ret = pthread_mutex_lock(&queue->lock);
-	if (ret != 0) {
+int mcl_queue_get_front(mcl_queue_s *queue, void *out) {
+	int ret = mtx_lock(&queue->lock);
+	if (ret != thrd_success) {
 		return -1;
 	}
 
 	if (queue->size == 0) {
-		pthread_mutex_unlock(&queue->lock);
+		mtx_unlock(&queue->lock);
 
 		return -1;
 	}
@@ -98,19 +97,19 @@ int mcl_queue_get_front(mcl_queue *queue, void *out) {
 	void *front = (void *)queue->buffer + (queue->front * queue->elem_size);
 	memcpy(out, front, queue->elem_size);
 
-	pthread_mutex_unlock(&queue->lock);
+	mtx_unlock(&queue->lock);
 
 	return 0;
 }
 
-int mcl_queue_get_rear(mcl_queue *queue, void *out) {
-	int ret = pthread_mutex_lock(&queue->lock);
-	if (ret != 0) {
+int mcl_queue_get_rear(mcl_queue_s *queue, void *out) {
+	int ret = mtx_lock(&queue->lock);
+	if (ret != thrd_success) {
 		return -1;
 	}
 
 	if (queue->size == 0) {
-		pthread_mutex_unlock(&queue->lock);
+		mtx_unlock(&queue->lock);
 
 		return -1;
 	}
@@ -125,17 +124,17 @@ int mcl_queue_get_rear(mcl_queue *queue, void *out) {
 	void *rear = (void *)queue->buffer + (rear_index * queue->elem_size);
 	memcpy(out, rear, queue->elem_size);
 
-	pthread_mutex_unlock(&queue->lock);
+	mtx_unlock(&queue->lock);
 
 	return 0;
 }
 
-void mcl_queue_free(mcl_queue *queue) {
+void mcl_queue_free(mcl_queue_s *queue) {
 	if (queue == NULL) {
 		return;
 	}
 
-	pthread_mutex_destroy(&queue->lock);
+	mtx_destroy(&queue->lock);
 
 	free(queue->buffer);
 	free(queue);
