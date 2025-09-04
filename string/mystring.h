@@ -8,8 +8,8 @@
  * @brief Thread-safe dynamic string structure.
  */
 typedef struct mcl_string {
-	char *data;		 /**< Pointer to string data (null-terminated) */
-	size_t size;	 /**< Current length of the string (excluding null terminator) */
+	char *data;		 /**< Pointer to null-terminated string data */
+	size_t size;	 /**< Current length (excluding null terminator) */
 	size_t capacity; /**< Allocated capacity including null terminator */
 	mtx_t lock;		 /**< Mutex for thread safety */
 } mcl_string_s;
@@ -17,60 +17,82 @@ typedef struct mcl_string {
 /**
  * @brief Create a new string initialized with the given text.
  *
- * @param text Initial text (must not be NULL)
- * @param initial_capacity Initial buffer capacity in bytes (including null terminator).
- *                         Pass 0 to auto-calculate the capacity.
- * @return Pointer to new string on success, or NULL on failure.
- *
- * @note Caller must release the string using mcl_string_free().
+ * @param text Initial text.
+ * @param initial_capacity Initial buffer capacity (including null terminator). Pass 0 to auto-calculate.
+ * @return Pointer to the new string, or NULL on failure.
  */
 mcl_string_s *mcl_string_new(const char *text, size_t initial_capacity);
 
 /**
- * @brief Append text to the string.
- *
- * @param string String to modify
- * @param text Text to append (must not be NULL, can be empty)
- * @return 0 on success, -1 on failure
- *
- * @note On failure, the original string remains unchanged.
- */
-int mcl_string_append(mcl_string_s *string, const char *text);
-
-/**
  * @brief Free the string and its resources.
  *
- * @param string String to free (safe to call with NULL)
- *
- * @note Caller must ensure no other thread is concurrently using this mcl_string.
+ * @param string String to free (safe to call with NULL).
  */
 void mcl_string_free(mcl_string_s *string);
 
 /**
+ * @brief Append text to the string.
+ *
+ * @param string String to modify.
+ * @param text Text to append.
+ * @return 0 on success, -1 on failure.
+ */
+int mcl_string_append(mcl_string_s *string, const char *text);
+
+/**
+ * @brief Clear the string content without freeing the memory.
+ *
+ * @param string String to clear.
+ */
+void mcl_string_clear(mcl_string_s *string);
+
+/**
  * @brief Get the current length of the string.
  *
- * @param string String to query
- * @return Length of the string (excluding null terminator), or 0 if NULL
+ * @param string String to query.
+ * @return Length excluding null terminator, or 0 if NULL.
  */
 size_t mcl_string_length(mcl_string_s *string);
 
 /**
  * @brief Get the total allocated capacity of the string buffer.
  *
- * @param string String to query
- * @return Capacity (in bytes, including null terminator), or 0 if NULL
+ * @param string String to query.
+ * @return Capacity in bytes (including null terminator), or 0 if NULL.
  */
 size_t mcl_string_capacity(mcl_string_s *string);
 
 /**
- * @brief Get a pointer to a null-terminated C-string representing the content.
+ * @brief Get a pointer to a null-terminated C-string.
  *
- * @param string String to read
- * @return Pointer to a thread-local buffer containing the string, or NULL on failure.
+ * @param string String to read.
+ * @return Pointer to a thread-local buffer, or NULL on failure.
  *
- * @note The returned pointer is valid until the next call to mcl_string_cstr()
- *       in the same thread or until the thread exits. **Do NOT free** the returned pointer.
+ * @note Valid until the next call in the same thread. Do NOT free the returned pointer.
  */
 char *mcl_string_cstr(mcl_string_s *string);
+
+/**
+ * @brief Compare two strings.
+ *
+ * @param s1 First string.
+ * @param s2 Second string.
+ * @return Same as strcmp().
+ */
+int mcl_string_compare(mcl_string_s *s1, mcl_string_s *s2);
+
+/**
+ * @brief Convert the string to uppercase.
+ *
+ * @param string String to modify.
+ */
+void mcl_string_to_upper(mcl_string_s *string);
+
+/**
+ * @brief Convert the string to lowercase.
+ *
+ * @param string String to modify.
+ */
+void mcl_string_to_lower(mcl_string_s *string);
 
 #endif /* MYCLIB_STRING_H */

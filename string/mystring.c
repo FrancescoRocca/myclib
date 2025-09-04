@@ -1,5 +1,6 @@
 #include "mystring.h"
 
+#include <ctype.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -235,4 +236,20 @@ char *mcl_string_cstr(mcl_string_s *string) {
 	mtx_unlock(&string->lock);
 
 	return tb->buf;
+}
+
+int mcl_string_compare(mcl_string_s *s1, mcl_string_s *s2) { return strcmp(s1->data, s2->data); }
+
+void mcl_string_clear(mcl_string_s *string) { memset(string->data, 0, mcl_string_length(string)); }
+
+void mcl_string_to_upper(mcl_string_s *string) {
+	for (size_t i = 0; i < mcl_string_length(string); ++i) {
+		string->data[i] = toupper(string->data[i]);
+	}
+}
+
+void mcl_string_to_lower(mcl_string_s *string) {
+	for (size_t i = 0; i < mcl_string_length(string); ++i) {
+		string->data[i] = tolower(string->data[i]);
+	}
 }
