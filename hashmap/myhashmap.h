@@ -1,7 +1,7 @@
 #ifndef MYCLIB_HASHMAP_H
 #define MYCLIB_HASHMAP_H
 
-#include <pthread.h>
+#include <threads.h>
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -13,11 +13,11 @@
  * Each bucket can hold one key-value pair and points to the next bucket
  * in case of hash collisions (separate chaining).
  */
-typedef struct mcl_bucket_t {
+typedef struct mcl_bucket {
 	void *key;				   /**< Pointer to the key */
 	void *value;			   /**< Pointer to the value */
-	struct mcl_bucket_t *next; /**< Pointer to the next bucket in case of collision */
-} mcl_bucket;
+	struct mcl_bucket *next; /**< Pointer to the next bucket in case of collision */
+} mcl_bucket_s;
 
 /**
  * @brief Function pointer type for a hash function

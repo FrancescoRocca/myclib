@@ -12,7 +12,7 @@ typedef struct mcl_string {
 	size_t size;	 /**< Current length of the string (excluding null terminator) */
 	size_t capacity; /**< Allocated capacity including null terminator */
 	mtx_t lock;		 /**< Mutex for thread safety */
-} mcl_string;
+} mcl_string_s;
 
 /**
  * @brief Create a new string initialized with the given text.
@@ -24,7 +24,7 @@ typedef struct mcl_string {
  *
  * @note Caller must release the string using mcl_string_free().
  */
-mcl_string *mcl_string_new(const char *text, size_t initial_capacity);
+mcl_string_s *mcl_string_new(const char *text, size_t initial_capacity);
 
 /**
  * @brief Append text to the string.
@@ -35,7 +35,7 @@ mcl_string *mcl_string_new(const char *text, size_t initial_capacity);
  *
  * @note On failure, the original string remains unchanged.
  */
-int mcl_string_append(mcl_string *string, const char *text);
+int mcl_string_append(mcl_string_s *string, const char *text);
 
 /**
  * @brief Free the string and its resources.
@@ -44,7 +44,7 @@ int mcl_string_append(mcl_string *string, const char *text);
  *
  * @note Caller must ensure no other thread is concurrently using this mcl_string.
  */
-void mcl_string_free(mcl_string *string);
+void mcl_string_free(mcl_string_s *string);
 
 /**
  * @brief Get the current length of the string.
@@ -52,7 +52,7 @@ void mcl_string_free(mcl_string *string);
  * @param string String to query
  * @return Length of the string (excluding null terminator), or 0 if NULL
  */
-size_t mcl_string_length(mcl_string *string);
+size_t mcl_string_length(mcl_string_s *string);
 
 /**
  * @brief Get the total allocated capacity of the string buffer.
@@ -60,7 +60,7 @@ size_t mcl_string_length(mcl_string *string);
  * @param string String to query
  * @return Capacity (in bytes, including null terminator), or 0 if NULL
  */
-size_t mcl_string_capacity(mcl_string *string);
+size_t mcl_string_capacity(mcl_string_s *string);
 
 /**
  * @brief Get a pointer to a null-terminated C-string representing the content.
@@ -71,6 +71,6 @@ size_t mcl_string_capacity(mcl_string *string);
  * @note The returned pointer is valid until the next call to mcl_string_cstr()
  *       in the same thread or until the thread exits. **Do NOT free** the returned pointer.
  */
-char *mcl_string_cstr(mcl_string *string);
+char *mcl_string_cstr(mcl_string_s *string);
 
 #endif /* MYCLIB_STRING_H */

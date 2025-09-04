@@ -40,12 +40,12 @@ size_t mcl_next_power_two(size_t len) {
 	return p;
 }
 
-mcl_string *mcl_string_new(const char *text, size_t initial_capacity) {
+mcl_string_s *mcl_string_new(const char *text, size_t initial_capacity) {
 	if (text == NULL) {
 		return NULL;
 	}
 
-	mcl_string *str = malloc(sizeof(mcl_string));
+	mcl_string_s *str = malloc(sizeof(mcl_string_s));
 	if (str == NULL) {
 		return NULL;
 	}
@@ -88,7 +88,7 @@ mcl_string *mcl_string_new(const char *text, size_t initial_capacity) {
 	return str;
 }
 
-int mcl_string_append(mcl_string *string, const char *text) {
+int mcl_string_append(mcl_string_s *string, const char *text) {
 	if (string == NULL || text == NULL) {
 		return -1;
 	}
@@ -133,7 +133,7 @@ int mcl_string_append(mcl_string *string, const char *text) {
 	return 0;
 }
 
-void mcl_string_free(mcl_string *string) {
+void mcl_string_free(mcl_string_s *string) {
 	if (string == NULL) {
 		return;
 	}
@@ -147,7 +147,7 @@ void mcl_string_free(mcl_string *string) {
 	free(string);
 }
 
-size_t mcl_string_length(mcl_string *string) {
+size_t mcl_string_length(mcl_string_s *string) {
 	if (string == NULL) {
 		return 0;
 	}
@@ -163,7 +163,7 @@ size_t mcl_string_length(mcl_string *string) {
 	return len;
 }
 
-size_t mcl_string_capacity(mcl_string *string) {
+size_t mcl_string_capacity(mcl_string_s *string) {
 	if (string == NULL) {
 		return 0;
 	}
@@ -179,7 +179,7 @@ size_t mcl_string_capacity(mcl_string *string) {
 	return cap;
 }
 
-char *mcl_string_cstr(mcl_string *string) {
+char *mcl_string_cstr(mcl_string_s *string) {
 	if (string == NULL || string->data == NULL) {
 		return NULL;
 	}
