@@ -19,7 +19,7 @@ int main(void) {
 	c_str = mcl_string_cstr(str);
 	length = mcl_string_length(str);
 	capacity = mcl_string_capacity(str);
-	printf("%s\nlength: %lld, capacity: %lld\n", c_str, length, capacity);
+	printf("%s\nlength: %zu, capacity: %zu\n", c_str, length, capacity);
 
 	/* Append text to a mcl_string */
 	mcl_string_append(str, " How are you?");
@@ -28,7 +28,7 @@ int main(void) {
 	c_str = mcl_string_cstr(str);
 	length = mcl_string_length(str);
 	capacity = mcl_string_capacity(str);
-	printf("%s\nsize: %lld, cap: %lld\n", c_str, length, capacity);
+	printf("%s\nsize: %zu, cap: %zu\n", c_str, length, capacity);
 
 	/* Always deallocate memory */
 	mcl_string_free(str);
