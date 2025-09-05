@@ -24,7 +24,7 @@ typedef struct mcl_queue {
  * @param elem_size  Size in bytes of each element.
  * @return Pointer to the new queue, or NULL on failure.
  */
-mcl_queue_s *mcl_queue_init(size_t queue_size, size_t elem_size);
+mcl_queue_s *mcl_queue_new(size_t queue_size, size_t elem_size);
 
 /**
  * @brief Add an element to the queue.

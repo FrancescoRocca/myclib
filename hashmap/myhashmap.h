@@ -83,7 +83,7 @@ typedef struct mcl_hashmap {
  * @param[in] value_size Size in bytes of each value to be stored
  * @return A pointer to the newly initialized hash map, or NULL on failure
  */
-mcl_hashmap_s *mcl_hm_init(hash_f *hash_fn, equal_f *equal_fn, free_key_f *free_key_fn, free_value_f *free_value_fn, size_t key_size, size_t value_size);
+mcl_hashmap_s *mcl_hm_new(hash_f *hash_fn, equal_f *equal_fn, free_key_f *free_key_fn, free_value_f *free_value_fn, size_t key_size, size_t value_size);
 
 /**
  * @brief Free all resources used by the hash map

@@ -40,6 +40,15 @@ void mcl_string_free(mcl_string_s *string);
 int mcl_string_append(mcl_string_s *string, const char *text);
 
 /**
+ * @brief Extend by adding another string.
+ *
+ * @param destination Destination string.
+ * @param source Source string.
+ * @return 0 on success, -1 on failure.
+ */
+int mcl_string_extend(mcl_string_s *destination, mcl_string_s *source);
+
+/**
  * @brief Clear the string content without freeing the memory.
  *
  * @param string String to clear.
@@ -69,6 +78,7 @@ size_t mcl_string_capacity(mcl_string_s *string);
  * @return Pointer to a thread-local buffer, or NULL on failure.
  *
  * @note Valid until the next call in the same thread. Do NOT free the returned pointer.
+ * Do NOT call more than once this function in a print function.
  */
 char *mcl_string_cstr(mcl_string_s *string);
 
@@ -77,7 +87,7 @@ char *mcl_string_cstr(mcl_string_s *string);
  *
  * @param s1 First string.
  * @param s2 Second string.
- * @return Same as strcmp().
+ * @return -123 on failure or same as strcmp().
  */
 int mcl_string_compare(mcl_string_s *s1, mcl_string_s *s2);
 
@@ -86,13 +96,13 @@ int mcl_string_compare(mcl_string_s *s1, mcl_string_s *s2);
  *
  * @param string String to modify.
  */
-void mcl_string_to_upper(mcl_string_s *string);
+void mcl_string_toupper(mcl_string_s *string);
 
 /**
  * @brief Convert the string to lowercase.
  *
  * @param string String to modify.
  */
-void mcl_string_to_lower(mcl_string_s *string);
+void mcl_string_tolower(mcl_string_s *string);
 
 #endif /* MYCLIB_STRING_H */

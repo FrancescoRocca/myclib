@@ -5,7 +5,7 @@
 int main(void) {
 	/* Allocate a new queue */
 	/* Always remember to check return values */
-	mcl_queue_s *queue = mcl_queue_init(3, sizeof(int));
+	mcl_queue_s *queue = mcl_queue_new(3, sizeof(int));
 
 	int val, out;
 

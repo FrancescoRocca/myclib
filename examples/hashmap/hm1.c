@@ -51,7 +51,7 @@ int main(void) {
 	/* This hashmap will contain names as keys and a custom type as value */
 	size_t key_size = sizeof(char) * MAX_STR_LEN;
 	size_t value_size = sizeof(int) + sizeof(char) * MAX_STR_LEN;
-	mcl_hashmap_s *map = mcl_hm_init(my_hash_func, my_equal_fun, my_free_key, my_free_value, key_size, value_size);
+	mcl_hashmap_s *map = mcl_hm_new(my_hash_func, my_equal_fun, my_free_key, my_free_value, key_size, value_size);
 
 	/* Set a new value */
 	struct my_custom_type p1 = {

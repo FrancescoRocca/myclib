@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-mcl_queue_s *mcl_queue_init(size_t queue_size, size_t elem_size) {
+mcl_queue_s *mcl_queue_new(size_t queue_size, size_t elem_size) {
 	mcl_queue_s *queue = malloc(sizeof(mcl_queue_s));
 	if (queue == NULL) {
 		return NULL;

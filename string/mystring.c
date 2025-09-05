@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <threads.h>
 
 /* Initialize Thread-Specific Data Keys */
 static tss_t buffer_key;
@@ -134,6 +135,12 @@ int mcl_string_append(mcl_string_s *string, const char *text) {
 	return 0;
 }
 
+int mcl_string_extend(mcl_string_s *destination, mcl_string_s *source) {
+	/* TODO */
+
+	return 0;
+}
+
 void mcl_string_free(mcl_string_s *string) {
 	if (string == NULL) {
 		return;
@@ -238,18 +245,72 @@ char *mcl_string_cstr(mcl_string_s *string) {
 	return tb->buf;
 }
 
-int mcl_string_compare(mcl_string_s *s1, mcl_string_s *s2) { return strcmp(s1->data, s2->data); }
-
-void mcl_string_clear(mcl_string_s *string) { memset(string->data, 0, mcl_string_length(string)); }
-
-void mcl_string_to_upper(mcl_string_s *string) {
-	for (size_t i = 0; i < mcl_string_length(string); ++i) {
-		string->data[i] = toupper(string->data[i]);
+int mcl_string_compare(mcl_string_s *s1, mcl_string_s *s2) {
+	if (s1 == NULL || s2 == NULL) {
+		return -123;
 	}
+
+	if (mtx_lock(&s1->lock) != thrd_success) {
+		return -123;
+	}
+
+	if (mtx_lock(&s2->lock) != thrd_success) {
+		mtx_unlock(&s1->lock);
+
+		return -123;
+	}
+
+	int ret = strcmp(s1->data, s2->data);
+
+	mtx_unlock(&s1->lock);
+	mtx_unlock(&s2->lock);
+
+	return ret;
 }
 
-void mcl_string_to_lower(mcl_string_s *string) {
-	for (size_t i = 0; i < mcl_string_length(string); ++i) {
-		string->data[i] = tolower(string->data[i]);
+void mcl_string_clear(mcl_string_s *string) {
+	if (string == NULL) {
+		return;
 	}
+
+	if (mtx_lock(&string->lock) != thrd_success) {
+		return;
+	}
+
+	memset(string->data, 0, string->size);
+	string->size = 0;
+
+	mtx_unlock(&string->lock);
+}
+
+void mcl_string_toupper(mcl_string_s *string) {
+	if (string == NULL) {
+		return;
+	}
+
+	if (mtx_lock(&string->lock) != thrd_success) {
+		return;
+	}
+
+	for (size_t i = 0; i < string->size; ++i) {
+		string->data[i] = (char)toupper((unsigned char)string->data[i]);
+	}
+
+	mtx_unlock(&string->lock);
+}
+
+void mcl_string_tolower(mcl_string_s *string) {
+	if (string == NULL) {
+		return;
+	}
+
+	if (mtx_lock(&string->lock) != thrd_success) {
+		return;
+	}
+
+	for (size_t i = 0; i < string->size; ++i) {
+		string->data[i] = (char)tolower((unsigned char)string->data[i]);
+	}
+
+	mtx_unlock(&string->lock);
 }

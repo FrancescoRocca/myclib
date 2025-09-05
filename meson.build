@@ -6,7 +6,7 @@ project(
 )
 
 string = files(
-  'examples/string/str1.c',
+  'examples/string/str2.c',
   'string/mystring.c',
 )
 

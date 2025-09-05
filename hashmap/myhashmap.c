@@ -50,7 +50,7 @@ static mcl_bucket_s *mcl_find_bucket(mcl_hashmap_s *hashmap, void *key, mcl_buck
 	return NULL;
 }
 
-mcl_hashmap_s *mcl_hm_init(hash_f *hash_fn, equal_f *equal_fn, free_key_f *free_key_fn, free_value_f *free_value_fn, size_t key_size, size_t value_size) {
+mcl_hashmap_s *mcl_hm_new(hash_f *hash_fn, equal_f *equal_fn, free_key_f *free_key_fn, free_value_f *free_value_fn, size_t key_size, size_t value_size) {
 	mcl_hashmap_s *hashmap = malloc(sizeof(mcl_hashmap_s));
 	if (hashmap == NULL) {
 		return NULL;
