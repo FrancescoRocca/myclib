@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,39 +43,48 @@ void my_free_key(void *key) { free(key); }
 
 void my_free_value(void *value) {
 	struct my_custom_type *mct = (struct my_custom_type *)value;
+
 	free(mct);
 }
 
-int main(void) {
+void test_hm1(void) {
 	/* Allocate a new hashmap */
 	/* Pass your custom hash, equal and free functions */
 	/* This hashmap will contain names as keys and a custom type as value */
 	size_t key_size = sizeof(char) * MAX_STR_LEN;
 	size_t value_size = sizeof(int) + sizeof(char) * MAX_STR_LEN;
 	mcl_hashmap_s *map = mcl_hm_new(my_hash_func, my_equal_fun, my_free_key, my_free_value, key_size, value_size);
+	assert(map != NULL);
 
-	/* Set a new value */
+	/* Make a new value */
 	struct my_custom_type p1 = {
 		.age = 21,
 	};
 	strncpy(p1.favourite_brand, "Ferrari", sizeof(p1.favourite_brand));
 
-	mcl_hm_set(map, "John", &p1);
+	/* Insert a new pair */
+	assert(mcl_hm_set(map, "John", &p1));
 
 	/* Retrieve the data */
+	/* Remember to free the value from the get function */
 	mcl_bucket_s *john = mcl_hm_get(map, "John");
+	assert(john != NULL);
+
 	char *name = (char *)john->key;
 	struct my_custom_type *john_v = (struct my_custom_type *)john->value;
 	int age = john_v->age;
 	char *fav_brand = john_v->favourite_brand;
-	fprintf(stdout, "Name: %s\nAge: %d\nFavourite brand: %s\n", name, age, fav_brand);
+
+	assert(strcmp(name, "John") == 0);
+	assert(age == 21);
+	assert(strcmp(fav_brand, "Ferrari") == 0);
+
+	/* Free the bucket */
 	mcl_hm_free_bucket(john);
 
 	/* Remove a key from hash map */
-	mcl_hm_remove(map, "John");
+	assert(mcl_hm_remove(map, "John"));
 
 	/* Deallocate */
 	mcl_hm_free(map);
-
-	return 0;
 }

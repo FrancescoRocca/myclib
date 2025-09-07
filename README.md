@@ -8,3 +8,6 @@ It is not production-ready. Use at your own risk.
 - Hashmaps - Thread-safe (MT Safe)
 - Dynamic strings - Thread-safe (MT Safe)
 - Circular Queue - Thread-safe (MT Safe)
+
+## Examples
+You can find examples inside `test/` folder.

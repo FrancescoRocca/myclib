@@ -6,17 +6,18 @@
 #include <string.h>
 #include <threads.h>
 
-/* Initialize Thread-Specific Data Keys */
+/* Initialize Thread-Specific Storage */
+
 static tss_t buffer_key;
 static once_flag buffer_once = ONCE_FLAG_INIT;
 
 typedef struct {
-	char *buf;
-	size_t cap;
-} tl_buffer_t;
+	char *buf;	/**< Allocated buffer */
+	size_t cap; /**< Buffer's capacity */
+} tl_buffer_s;
 
 static void buffer_destructor(void *buf) {
-	tl_buffer_t *tb = (tl_buffer_t *)buf;
+	tl_buffer_s *tb = (tl_buffer_s *)buf;
 	if (tb == NULL) {
 		return;
 	}
@@ -26,8 +27,8 @@ static void buffer_destructor(void *buf) {
 
 static void buffer_key_init(void) { tss_create(&buffer_key, buffer_destructor); }
 
-/* Dynamic String library */
-size_t mcl_next_power_two(size_t len) {
+/* Returns the next power of two of a number */
+static size_t next_power_two(size_t len) {
 	if (len == 0) return 1;
 
 	size_t p = 1;
@@ -55,6 +56,7 @@ mcl_string_s *mcl_string_new(const char *text, size_t initial_capacity) {
 	str->size = strlen(text);
 
 	if (initial_capacity != 0 && initial_capacity < (str->size + 1)) {
+		/* Can't allocate with this capacity */
 		free(str);
 
 		return NULL;
@@ -62,12 +64,13 @@ mcl_string_s *mcl_string_new(const char *text, size_t initial_capacity) {
 
 	size_t capacity = initial_capacity;
 	if (capacity == 0) {
-		capacity = mcl_next_power_two(str->size + 1);
+		/* Calculate the needed capacity */
+		capacity = next_power_two(str->size + 1);
 	}
 
 	str->capacity = capacity;
 
-	/* Allocate data buffer */
+	/* Allocate data (text) buffer */
 	str->data = malloc(str->capacity);
 	if (str->data == NULL) {
 		free(str);
@@ -79,7 +82,7 @@ mcl_string_s *mcl_string_new(const char *text, size_t initial_capacity) {
 	memcpy(str->data, text, str->size);
 	str->data[str->size] = '\0';
 
-	/* Init pthread mutex */
+	/* Init mutex */
 	if (mtx_init(&str->lock, mtx_plain) != thrd_success) {
 		free(str->data);
 		free(str);
@@ -95,7 +98,6 @@ int mcl_string_append(mcl_string_s *string, const char *text) {
 		return -1;
 	}
 
-	/* Lock resource */
 	if (mtx_lock(&string->lock) != thrd_success) {
 		return -1;
 	}
@@ -112,7 +114,7 @@ int mcl_string_append(mcl_string_s *string, const char *text) {
 
 	/* Check if we need to resize */
 	if (new_size + 1 > string->capacity) {
-		size_t new_capacity = mcl_next_power_two(new_size + 1);
+		size_t new_capacity = next_power_two(new_size + 1);
 		/* Reallocate the buffer */
 		void *new_data = realloc(string->data, new_capacity);
 		if (!new_data) {
@@ -200,8 +202,10 @@ char *mcl_string_cstr(mcl_string_s *string) {
 
 	size_t need = string->size + 1;
 
-	tl_buffer_t *tb = (tl_buffer_t *)tss_get(buffer_key);
+	/* Retrieve thread local buffer */
+	tl_buffer_s *tb = (tl_buffer_s *)tss_get(buffer_key);
 	if (tb == NULL) {
+		/* Not found, make a new one */
 		tb = malloc(sizeof(*tb));
 		if (tb == NULL) {
 			mtx_unlock(&string->lock);
@@ -209,7 +213,7 @@ char *mcl_string_cstr(mcl_string_s *string) {
 			return NULL;
 		}
 
-		tb->cap = mcl_next_power_two(need);
+		tb->cap = next_power_two(need);
 		tb->buf = malloc(tb->cap);
 		if (tb->buf == NULL) {
 			free(tb);
@@ -226,7 +230,8 @@ char *mcl_string_cstr(mcl_string_s *string) {
 			return NULL;
 		}
 	} else if (tb->cap < need) {
-		size_t newcap = mcl_next_power_two(need);
+		/* Found, but we need a bigger buffer */
+		size_t newcap = next_power_two(need);
 		char *tmp = realloc(tb->buf, newcap);
 		if (tmp == NULL) {
 			mtx_unlock(&string->lock);

@@ -1,27 +1,26 @@
 project(
-  'examples',
+  'testlib',
   'c',
   version: '0.1',
   default_options: ['c_std=c17'],
 )
 
-string = files(
-  'examples/string/str2.c',
+src = files(
+  'hashmap/myhashmap.c',
+  'queue/myqueue.c',
   'string/mystring.c',
 )
 
-queue = files(
-  'examples/queue/q1.c',
-  'queue/myqueue.c',
+testlib = files(
+  'test/test.c',
+  'test/hashmap/hm1.c',
+  'test/queue/q1.c',
+  'test/string/str1.c',
+  'test/string/str2.c',
 )
 
-hashmap = files(
-  'examples/hashmap/hm1.c',
-  'hashmap/myhashmap.c',
-)
+sources = src + testlib
 
 inc_dir = include_directories('string', 'queue', 'hashmap')
 
-executable('string', string, include_directories: inc_dir)
-executable('queue', queue, include_directories: inc_dir)
-executable('hashmap', hashmap, include_directories: inc_dir)
+executable('testlib', sources, include_directories: inc_dir)
