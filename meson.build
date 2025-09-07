@@ -9,6 +9,7 @@ src = files(
   'hashmap/myhashmap.c',
   'queue/myqueue.c',
   'string/mystring.c',
+  'vector/myvector.c',
 )
 
 testlib = files(
@@ -17,10 +18,11 @@ testlib = files(
   'test/queue/q1.c',
   'test/string/str1.c',
   'test/string/str2.c',
+  'test/vector/v1.c',
 )
 
 sources = src + testlib
 
-inc_dir = include_directories('string', 'queue', 'hashmap')
+inc_dir = include_directories('string', 'queue', 'hashmap', 'vector')
 
 executable('testlib', sources, include_directories: inc_dir)

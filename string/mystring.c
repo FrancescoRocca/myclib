@@ -142,12 +142,24 @@ int mcl_string_extend(mcl_string_s *destination, mcl_string_s *source) {
 		return -1;
 	}
 
+	if (mtx_lock(&destination->lock) != thrd_success) {
+		return -1;
+	}
+
+	if (mtx_lock(&source->lock) != thrd_success) {
+		mtx_unlock(&destination->lock);
+		return -1;
+	}
+
 	size_t need = destination->size + source->size;
 	if (need > destination->capacity) {
 		/* Reallocate destination data buffer */
 		destination->capacity = next_power_two(need);
 		char *tmp = realloc(destination->data, destination->capacity);
 		if (tmp == NULL) {
+			mtx_unlock(&destination->lock);
+			mtx_unlock(&source->lock);
+
 			return -1;
 		}
 		destination->data = tmp;
@@ -157,6 +169,9 @@ int mcl_string_extend(mcl_string_s *destination, mcl_string_s *source) {
 	memcpy(destination->data + destination->size, source->data, source->size);
 	destination->size = need;
 	destination->data[destination->size] = '\0';
+
+	mtx_unlock(&destination->lock);
+	mtx_unlock(&source->lock);
 
 	return 0;
 }
