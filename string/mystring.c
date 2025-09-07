@@ -138,7 +138,25 @@ int mcl_string_append(mcl_string_s *string, const char *text) {
 }
 
 int mcl_string_extend(mcl_string_s *destination, mcl_string_s *source) {
-	/* TODO */
+	if (destination == NULL || source == NULL) {
+		return -1;
+	}
+
+	size_t need = destination->size + source->size;
+	if (need > destination->capacity) {
+		/* Reallocate destination data buffer */
+		destination->capacity = next_power_two(need);
+		char *tmp = realloc(destination->data, destination->capacity);
+		if (tmp == NULL) {
+			return -1;
+		}
+		destination->data = tmp;
+	}
+
+	/* Copy memory from source data buffer */
+	memcpy(destination->data + destination->size, source->data, source->size);
+	destination->size = need;
+	destination->data[destination->size] = '\0';
 
 	return 0;
 }

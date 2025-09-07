@@ -5,6 +5,11 @@
 #include <assert.h>
 #include <stdio.h>
 
+void test_hm1();
+void test_q1();
+void test_str1();
+void test_str2();
+
 int main(void) {
 	puts("==== [Running Hashmap tests] ====");
 	test_hm1();

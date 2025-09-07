@@ -22,6 +22,13 @@ void test_str2(void) {
 	assert(strcmp(mcl_string_cstr(s1), "") == 0);
 	assert(strcmp(mcl_string_cstr(s2), "HELLO, WORLD!") == 0);
 
+	/* Extend a string */
+	mcl_string_s *extend_me = mcl_string_new("This string is suuuuuuuuuuuuuuuuuuuuuper extended!", 0);
+	mcl_string_extend(s1, extend_me);
+	assert(mcl_string_length(s1) == 50);
+	assert(mcl_string_capacity(s1) == 64);
+
 	mcl_string_free(s1);
 	mcl_string_free(s2);
+	mcl_string_free(extend_me);
 }
