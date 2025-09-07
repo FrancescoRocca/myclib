@@ -1,14 +1,15 @@
 # myclib
 
-**myclib** is a personal C library. This project is a work in progress and intended for educational use.  
-It is not production-ready. Use at your own risk.
+A small, personal C library for learning and experimentation.  
+**Not production-ready. Use at your own risk.**
 
 ## Features
 
-- Hashmaps - Thread-safe (MT Safe)
-- Dynamic strings - Thread-safe (MT Safe)
-- Circular Queues - Thread-safe (MT Safe)
-- Vectors - Thread-safe (MT Safe)
+- Thread-safe hashmaps
+- Thread-safe dynamic strings
+- Thread-safe circular queues
+- Thread-safe vectors
 
-## Examples
-You can find examples inside `test/` folder.
+## Usage
+
+See the `test/` folder for examples.
