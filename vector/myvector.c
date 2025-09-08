@@ -20,12 +20,12 @@ static size_t next_power_two(size_t len) {
 	return p;
 }
 
-mcl_vector_s *mcl_vector_new(size_t initial_capacity, size_t element_size) {
+vector_s *vector_new(size_t initial_capacity, size_t element_size) {
 	if (initial_capacity < 0) {
 		return NULL;
 	}
 
-	mcl_vector_s *vec = (mcl_vector_s *)malloc(sizeof(mcl_vector_s));
+	vector_s *vec = (vector_s *)malloc(sizeof(vector_s));
 	if (vec == NULL) {
 		return NULL;
 	}
@@ -50,7 +50,7 @@ mcl_vector_s *mcl_vector_new(size_t initial_capacity, size_t element_size) {
 	return vec;
 }
 
-int mcl_vector_push(mcl_vector_s *vec, void *elem) {
+int vector_push(vector_s *vec, void *elem) {
 	if (vec == NULL || elem == NULL) {
 		return -1;
 	}
@@ -80,7 +80,7 @@ int mcl_vector_push(mcl_vector_s *vec, void *elem) {
 	return 0;
 }
 
-void mcl_vector_free(mcl_vector_s *vec) {
+void vector_free(vector_s *vec) {
 	if (vec == NULL) {
 		return;
 	}
@@ -92,7 +92,7 @@ void mcl_vector_free(mcl_vector_s *vec) {
 	free(vec);
 }
 
-size_t mcl_vector_size(mcl_vector_s *vec) {
+size_t vector_size(vector_s *vec) {
 	if (vec == NULL) {
 		return -1;
 	}
@@ -108,7 +108,7 @@ size_t mcl_vector_size(mcl_vector_s *vec) {
 	return size;
 }
 
-size_t mcl_vector_capacity(mcl_vector_s *vec) {
+size_t vector_cap(vector_s *vec) {
 	if (vec == NULL) {
 		return -1;
 	}
@@ -124,7 +124,7 @@ size_t mcl_vector_capacity(mcl_vector_s *vec) {
 	return cap;
 }
 
-void *mcl_vector_get(mcl_vector_s *vec, size_t index) {
+void *vector_get(vector_s *vec, size_t index) {
 	if (vec == NULL || index < 0 || index > vec->size) {
 		return NULL;
 	}
