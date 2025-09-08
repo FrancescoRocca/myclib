@@ -20,12 +20,8 @@ static size_t next_power_two(size_t len) {
 	return p;
 }
 
-vector_s *vector_new(size_t initial_capacity, size_t element_size) {
-	if (initial_capacity < 0) {
-		return NULL;
-	}
-
-	vector_s *vec = (vector_s *)malloc(sizeof(vector_s));
+vec_s *vec_new(size_t initial_capacity, size_t element_size) {
+	vec_s *vec = (vec_s *)malloc(sizeof(vec_s));
 	if (vec == NULL) {
 		return NULL;
 	}
@@ -50,7 +46,7 @@ vector_s *vector_new(size_t initial_capacity, size_t element_size) {
 	return vec;
 }
 
-int vector_push(vector_s *vec, void *elem) {
+int vec_push(vec_s *vec, void *elem) {
 	if (vec == NULL || elem == NULL) {
 		return -1;
 	}
@@ -62,7 +58,7 @@ int vector_push(vector_s *vec, void *elem) {
 	if (vec->size + 1 > vec->capacity) {
 		/* Reallocate buffer */
 		vec->capacity = next_power_two(vec->size + 1);
-		void *tmp = malloc(vec->capacity * vec->elem_size);
+		void *tmp = realloc(vec->data, vec->capacity * vec->elem_size);
 		if (tmp == NULL) {
 			mtx_unlock(&vec->lock);
 
@@ -72,7 +68,7 @@ int vector_push(vector_s *vec, void *elem) {
 	}
 
 	/* Add the new element */
-	memcpy(vec->data + (vec->size * vec->elem_size), elem, vec->elem_size);
+	memcpy((char *)vec->data + (vec->size * vec->elem_size), elem, vec->elem_size);
 	vec->size++;
 
 	mtx_unlock(&vec->lock);
@@ -80,7 +76,7 @@ int vector_push(vector_s *vec, void *elem) {
 	return 0;
 }
 
-void vector_free(vector_s *vec) {
+void vec_free(vec_s *vec) {
 	if (vec == NULL) {
 		return;
 	}
@@ -92,7 +88,7 @@ void vector_free(vector_s *vec) {
 	free(vec);
 }
 
-size_t vector_size(vector_s *vec) {
+size_t vec_size(vec_s *vec) {
 	if (vec == NULL) {
 		return -1;
 	}
@@ -108,7 +104,7 @@ size_t vector_size(vector_s *vec) {
 	return size;
 }
 
-size_t vector_cap(vector_s *vec) {
+size_t vec_cap(vec_s *vec) {
 	if (vec == NULL) {
 		return -1;
 	}
@@ -124,8 +120,8 @@ size_t vector_cap(vector_s *vec) {
 	return cap;
 }
 
-void *vector_get(vector_s *vec, size_t index) {
-	if (vec == NULL || index < 0 || index > vec->size) {
+void *vec_get(vec_s *vec, size_t index) {
+	if (vec == NULL || index > vec->size) {
 		return NULL;
 	}
 
@@ -138,9 +134,98 @@ void *vector_get(vector_s *vec, size_t index) {
 		return NULL;
 	}
 
-	memcpy(elem, vec->data + (index * vec->elem_size), vec->elem_size);
+	memcpy(elem, (char *)vec->data + (index * vec->elem_size), vec->elem_size);
 
 	mtx_unlock(&vec->lock);
 
 	return elem;
+}
+
+int vec_shrink(vec_s *vec) {
+	if (vec == NULL) {
+		return -1;
+	}
+
+	if (mtx_lock(&vec->lock) != thrd_success) {
+		return -1;
+	}
+
+	void *tmp = realloc(vec->data, vec->size);
+	if (tmp == NULL) {
+		mtx_unlock(&vec->lock);
+
+		return -1;
+	}
+
+	vec->data = tmp;
+	vec->capacity = vec->size;
+
+	mtx_unlock(&vec->lock);
+
+	return 0;
+}
+
+int vec_clear(vec_s *vec) {
+	if (vec == NULL) {
+		return -1;
+	}
+
+	if (mtx_lock(&vec->lock) != thrd_success) {
+		return -1;
+	}
+
+	memset(vec->data, 0, vec->size);
+	vec->size = 0;
+
+	mtx_unlock(&vec->lock);
+
+	return 0;
+}
+
+void *vec_pop(vec_s *vec) {
+	if (vec == NULL) {
+		return NULL;
+	}
+
+	if (vec->size == 0) {
+		return NULL;
+	}
+
+	if (mtx_lock(&vec->lock) != thrd_success) {
+		return NULL;
+	}
+
+	void *e = malloc(vec->elem_size);
+	vec->size--;
+	memcpy(e, (char *)vec->data + (vec->size * vec->elem_size), vec->elem_size);
+
+	mtx_unlock(&vec->lock);
+
+	return e;
+}
+
+int vec_insert(vec_s *vec, size_t index, void *value) {
+	if (vec == NULL || value == NULL) {
+		return -1;
+	}
+
+	if (index > vec->size) {
+		return -1;
+	}
+
+	if (vec->size + 1 > vec->capacity) {
+		/* No space, realloc */
+		void *tmp = realloc(vec->data, next_power_two(vec->size + 1));
+		if (tmp == NULL) {
+			return -1;
+		}
+		vec->data = tmp;
+	}
+
+	/* Shift memory and copy the new value */
+	size_t tmp_size = vec->size - index + 1;
+	memmove((char *)vec->data + (index * vec->elem_size), (char *)vec->data + ((index + 1) * vec->elem_size), tmp_size * vec->elem_size);
+	memcpy((char *)vec->data + (index * vec->elem_size), value, vec->elem_size);
+
+	return 0;
 }

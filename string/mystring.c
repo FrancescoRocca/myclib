@@ -355,8 +355,8 @@ void string_tolower(string_s *string) {
 
 /* Build Longest Prefix Suffix array */
 static void build_lsp(int *lps, const char *substring, size_t sub_len) {
-	int len = 0;
-	int i = 1;
+	size_t len = 0;
+	size_t i = 1;
 
 	while (i < sub_len) {
 		if (substring[i] == substring[len]) {

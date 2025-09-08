@@ -12,23 +12,38 @@ typedef struct my_elem {
 void test_v1() {
 	/* Allocate a new vector */
 	size_t elem_size = sizeof(my_elem_s);
-	vector_s *v = vector_new(10, elem_size);
-	assert(vector_size(v) == 0);
-	assert(vector_cap(v) == 16);
+	vec_s *v = vec_new(10, elem_size);
+	assert(vec_size(v) == 0);
+	assert(vec_cap(v) == 16);
 
 	/* Push an element */
 	my_elem_s e1 = {
 		.age = 21,
 		.name = "John",
 	};
-	vector_push(v, &e1);
-	assert(vector_size(v) == 1);
+	vec_push(v, &e1);
+	assert(vec_size(v) == 1);
 
-	/* Retrieve an element (Remember to FREE) */
-	my_elem_s *e1_v = (my_elem_s *)vector_get(v, 0);
-	printf("name: %s, age: %d\n", e1_v->name, e1_v->age);
+	/* Retrieve an element (Remember to free) */
+	my_elem_s *e1_v = (my_elem_s *)vec_get(v, 0);
 	free(e1_v);
 
+	/* Pop last element (Remember to free) */
+	my_elem_s *pop = (my_elem_s *)vec_pop(v);
+	free(pop);
+
+	/* Insert an element */
+	vec_push(v, &e1);
+	vec_push(v, &e1);
+	vec_insert(v, 2, &e1);
+	my_elem_s last = {
+		.age = 33,
+		.name = "Last",
+	};
+	vec_push(v, &last);
+	my_elem_s *lastv = (my_elem_s *)vec_pop(v);
+	free(lastv);
+
 	/* Deallocate the vector */
-	vector_free(v);
+	vec_free(v);
 }
