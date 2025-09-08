@@ -213,10 +213,16 @@ int vec_insert(vec_s *vec, size_t index, void *value) {
 		return -1;
 	}
 
+	if (mtx_lock(&vec->lock) != thrd_success) {
+		return -1;
+	}
+
 	if (vec->size + 1 > vec->capacity) {
 		/* No space, realloc */
 		void *tmp = realloc(vec->data, next_power_two(vec->size + 1));
 		if (tmp == NULL) {
+			mtx_unlock(&vec->lock);
+			
 			return -1;
 		}
 		vec->data = tmp;
@@ -226,6 +232,52 @@ int vec_insert(vec_s *vec, size_t index, void *value) {
 	size_t tmp_size = vec->size - index + 1;
 	memmove((char *)vec->data + (index * vec->elem_size), (char *)vec->data + ((index + 1) * vec->elem_size), tmp_size * vec->elem_size);
 	memcpy((char *)vec->data + (index * vec->elem_size), value, vec->elem_size);
+	vec->size++;
+
+	mtx_unlock(&vec->lock);
+
+	return 0;
+}
+
+int vec_remove(vec_s *vec, size_t index) {
+	if (vec == NULL) {
+		return -1;
+	}
+
+	if (index > vec->size) {
+		return -1;
+	}
+
+	if (mtx_lock(&vec->lock) != thrd_success) {
+		return -1;
+	}
+
+	size_t size = vec->size - index;
+	/* Overwrite bytes */
+	memmove((char *)vec->data + (index * vec->elem_size), (char *)vec->data + ((index + 1) * vec->elem_size), size);
+	vec->size--;
+
+	mtx_unlock(&vec->lock);
+
+	return 0;
+}
+
+int vec_set(vec_s *vec, size_t index, void *value) {
+	if (vec == NULL || value == NULL) {
+		return -1;
+	}
+
+	if (index > vec->size) {
+		return -1;
+	}
+
+	if (mtx_lock(&vec->lock), thrd_success) {
+		return -1;
+	}
+
+	memcpy((char *)vec->data + (index * vec->elem_size), value, vec->elem_size);
+
+	mtx_unlock(&vec->lock);
 
 	return 0;
 }

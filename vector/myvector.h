@@ -28,13 +28,11 @@ void *vec_pop(vec_s *vec);
 
 int vec_insert(vec_s *vec, size_t index, void *value);
 
-// TODO
 int vec_remove(vec_s *vec, size_t index);
 
 // free the returned value
 void *vec_get(vec_s *vec, size_t index);
 
-// TODO
 int vec_set(vec_s *vec, size_t index, void *value);
 
 int vec_clear(vec_s *vec);
