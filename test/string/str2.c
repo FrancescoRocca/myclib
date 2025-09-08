@@ -4,35 +4,35 @@
 #include "../../string/mystring.h"
 
 void test_str2(void) {
-	mcl_string_s *s1 = mcl_string_new("Hello, world!", 0);
+	string_s *s1 = string_new("Hello, world!", 0);
 	assert(s1 != NULL);
-	mcl_string_s *s2 = mcl_string_new("Hello, world!", 0);
+	string_s *s2 = string_new("Hello, world!", 0);
 	assert(s2 != NULL);
 	/* Don't call mcl_string_cstr() more than once in the same printf function */
 
-	int ret = mcl_string_compare(s1, s2);
+	int ret = string_compare(s1, s2);
 	assert(ret == 0);
 
-	mcl_string_clear(s1);
-	ret = mcl_string_compare(s1, s2);
+	string_clear(s1);
+	ret = string_compare(s1, s2);
 	assert(ret != 0);
 
-	mcl_string_tolower(s1);
-	mcl_string_toupper(s2);
-	assert(strcmp(mcl_string_cstr(s1), "") == 0);
-	assert(strcmp(mcl_string_cstr(s2), "HELLO, WORLD!") == 0);
+	string_tolower(s1);
+	string_toupper(s2);
+	assert(strcmp(string_cstr(s1), "") == 0);
+	assert(strcmp(string_cstr(s2), "HELLO, WORLD!") == 0);
 
 	/* Extend a string */
-	mcl_string_s *extend_me = mcl_string_new("This string is suuuuuuuuuuuuuuuuuuuuuper extended!", 0);
-	mcl_string_extend(s1, extend_me);
-	assert(mcl_string_length(s1) == 50);
-	assert(mcl_string_capacity(s1) == 64);
+	string_s *extend_me = string_new("This string is suuuuuuuuuuuuuuuuuuuuuper extended!", 0);
+	string_extend(s1, extend_me);
+	assert(string_len(s1) == 50);
+	assert(string_cap(s1) == 64);
 
 	/* Find substring in string */
-	int pos = mcl_string_find(s1, "is");
-	assert(pos == 2);
+	int pos = string_find(s1, " is ");
+	assert(pos == 11);
 
-	mcl_string_free(s1);
-	mcl_string_free(s2);
-	mcl_string_free(extend_me);
+	string_free(s1);
+	string_free(s2);
+	string_free(extend_me);
 }
