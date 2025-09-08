@@ -190,7 +190,7 @@ void string_free(string_s *string) {
 	free(string);
 }
 
-size_t string_length(string_s *string) {
+size_t string_len(string_s *string) {
 	if (string == NULL) {
 		return 0;
 	}
@@ -206,7 +206,7 @@ size_t string_length(string_s *string) {
 	return len;
 }
 
-size_t string_capacity(string_s *string) {
+size_t string_cap(string_s *string) {
 	if (string == NULL) {
 		return 0;
 	}

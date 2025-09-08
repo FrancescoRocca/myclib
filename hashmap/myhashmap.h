@@ -13,11 +13,11 @@
  * Each bucket can hold one key-value pair and points to the next bucket
  * in case of hash collisions (separate chaining).
  */
-typedef struct mcl_bucket {
-	void *key;				 /**< Pointer to the key */
-	void *value;			 /**< Pointer to the value */
-	struct mcl_bucket *next; /**< Pointer to the next bucket in case of collision */
-} mcl_bucket_s;
+typedef struct bucket {
+	void *key;			 /**< Pointer to the key */
+	void *value;		 /**< Pointer to the value */
+	struct bucket *next; /**< Pointer to the next bucket in case of collision */
+} bucket_s;
 
 /**
  * @brief Function pointer type for a hash function
@@ -56,17 +56,17 @@ typedef void free_value_f(void *value);
  * Contains function pointers for hash computation, key comparison,
  * and memory management, along with the bucket array.
  */
-typedef struct mcl_hashmap {
-	hash_f *hash_fn;					   /**< Hash function */
-	equal_f *equal_fn;					   /**< Equality comparison function */
-	free_key_f *free_key_fn;			   /**< Key deallocation function (optional) */
-	free_value_f *free_value_fn;		   /**< Value deallocation function (optional) */
-	size_t key_size;					   /**< Size in bytes of the key */
-	size_t value_size;					   /**< Size in bytes of the value */
-	mcl_bucket_s map[MYCLIB_HASHMAP_SIZE]; /**< Array of bucket chains */
-	mtx_t *locks;						   /**< Mutex array */
-	size_t num_locks;					   /**< Number of mutex */
-} mcl_hashmap_s;
+typedef struct hashmap {
+	hash_f *hash_fn;				   /**< Hash function */
+	equal_f *equal_fn;				   /**< Equality comparison function */
+	free_key_f *free_key_fn;		   /**< Key deallocation function (optional) */
+	free_value_f *free_value_fn;	   /**< Value deallocation function (optional) */
+	size_t key_size;				   /**< Size in bytes of the key */
+	size_t value_size;				   /**< Size in bytes of the value */
+	bucket_s map[MYCLIB_HASHMAP_SIZE]; /**< Array of bucket chains */
+	mtx_t *locks;					   /**< Mutex array */
+	size_t num_locks;				   /**< Number of mutex */
+} hashmap_s;
 
 /**
  * @brief Initialize a new hash map with user-defined behavior functions
@@ -83,7 +83,7 @@ typedef struct mcl_hashmap {
  * @param[in] value_size Size in bytes of each value to be stored
  * @return A pointer to the newly initialized hash map, or NULL on failure
  */
-mcl_hashmap_s *mcl_hm_new(hash_f *hash_fn, equal_f *equal_fn, free_key_f *free_key_fn, free_value_f *free_value_fn, size_t key_size, size_t value_size);
+hashmap_s *hm_new(hash_f *hash_fn, equal_f *equal_fn, free_key_f *free_key_fn, free_value_f *free_value_fn, size_t key_size, size_t value_size);
 
 /**
  * @brief Free all resources used by the hash map
@@ -93,14 +93,14 @@ mcl_hashmap_s *mcl_hm_new(hash_f *hash_fn, equal_f *equal_fn, free_key_f *free_k
  *
  * @param[in] hashmap Pointer to the hash map to free
  */
-void mcl_hm_free(mcl_hashmap_s *hashmap);
+void hm_free(hashmap_s *hashmap);
 
 /**
- * @brief Free a bucket returned by mcl_hm_get()
+ * @brief Free a bucket returned by get
  *
  * @param[in] bucket Pointer to the bucket to free
  */
-void mcl_hm_free_bucket(mcl_bucket_s *bucket);
+void hm_free_bucket(bucket_s *bucket);
 
 /**
  * @brief Insert or update a key-value pair in the hash map
@@ -114,7 +114,7 @@ void mcl_hm_free_bucket(mcl_bucket_s *bucket);
  * @param[in] value Pointer to the value to insert (will be copied, must not be NULL)
  * @return true if the operation succeeded, false on failure (NULL hashmap/key/value or memory allocation failure)
  */
-bool mcl_hm_set(mcl_hashmap_s *hashmap, void *key, void *value);
+bool hm_set(hashmap_s *hashmap, void *key, void *value);
 
 /**
  * @brief Retrieve a bucket by key
@@ -126,7 +126,7 @@ bool mcl_hm_set(mcl_hashmap_s *hashmap, void *key, void *value);
  * @param[in] key Pointer to the key to search for
  * @return Pointer to the copy of the bucket, to avoid race conditions, or NULL if not found or on invalid input
  */
-mcl_bucket_s *mcl_hm_get(mcl_hashmap_s *hashmap, void *key);
+bucket_s *hm_get(hashmap_s *hashmap, void *key);
 
 /**
  * @brief Remove a key-value pair from the hash map
@@ -138,6 +138,6 @@ mcl_bucket_s *mcl_hm_get(mcl_hashmap_s *hashmap, void *key);
  * @param[in] key Pointer to the key to remove
  * @return true if the key was found and removed, false if not found or on invalid input
  */
-bool mcl_hm_remove(mcl_hashmap_s *hashmap, void *key);
+bool hm_remove(hashmap_s *hashmap, void *key);
 
 #endif /* MYCLIB_HASHMAP_H */

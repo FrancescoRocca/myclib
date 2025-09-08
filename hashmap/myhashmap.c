@@ -4,14 +4,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-static size_t mcl_get_mutex(mcl_hashmap_s *hashmap, size_t hash) { return hash % hashmap->num_locks; }
+static size_t get_mutex(hashmap_s *hashmap, size_t hash) { return hash % hashmap->num_locks; }
 
-static size_t mcl_get_bucket_index(mcl_hashmap_s *hashmap, void *key) {
+static size_t get_bucket_index(hashmap_s *hashmap, void *key) {
 	unsigned int hash = hashmap->hash_fn(key);
 	return hash % MYCLIB_HASHMAP_SIZE;
 }
 
-static void mcl_free_bucket_content(mcl_hashmap_s *hashmap, mcl_bucket_s *bucket) {
+static void free_bucket_content(hashmap_s *hashmap, bucket_s *bucket) {
 	if (bucket == NULL) {
 		return;
 	}
@@ -27,9 +27,9 @@ static void mcl_free_bucket_content(mcl_hashmap_s *hashmap, mcl_bucket_s *bucket
 	}
 }
 
-static mcl_bucket_s *mcl_find_bucket(mcl_hashmap_s *hashmap, void *key, mcl_bucket_s **prev) {
-	size_t index = mcl_get_bucket_index(hashmap, key);
-	mcl_bucket_s *bucket = &hashmap->map[index];
+static bucket_s *find_bucket(hashmap_s *hashmap, void *key, bucket_s **prev) {
+	size_t index = get_bucket_index(hashmap, key);
+	bucket_s *bucket = &hashmap->map[index];
 
 	*prev = NULL;
 
@@ -50,8 +50,8 @@ static mcl_bucket_s *mcl_find_bucket(mcl_hashmap_s *hashmap, void *key, mcl_buck
 	return NULL;
 }
 
-mcl_hashmap_s *mcl_hm_new(hash_f *hash_fn, equal_f *equal_fn, free_key_f *free_key_fn, free_value_f *free_value_fn, size_t key_size, size_t value_size) {
-	mcl_hashmap_s *hashmap = malloc(sizeof(mcl_hashmap_s));
+hashmap_s *hm_new(hash_f *hash_fn, equal_f *equal_fn, free_key_f *free_key_fn, free_value_f *free_value_fn, size_t key_size, size_t value_size) {
+	hashmap_s *hashmap = malloc(sizeof(hashmap_s));
 	if (hashmap == NULL) {
 		return NULL;
 	}
@@ -90,25 +90,25 @@ mcl_hashmap_s *mcl_hm_new(hash_f *hash_fn, equal_f *equal_fn, free_key_f *free_k
 	return hashmap;
 }
 
-void mcl_hm_free(mcl_hashmap_s *hashmap) {
+void hm_free(hashmap_s *hashmap) {
 	if (hashmap == NULL) {
 		return;
 	}
 
 	/* Iterate through all buckets in the hash map */
 	for (size_t i = 0; i < MYCLIB_HASHMAP_SIZE; ++i) {
-		mcl_bucket_s *bucket = &hashmap->map[i];
+		bucket_s *bucket = &hashmap->map[i];
 
 		/* Free the first bucket if it contains data */
 		if (bucket->key != NULL) {
-			mcl_free_bucket_content(hashmap, bucket);
+			free_bucket_content(hashmap, bucket);
 		}
 
 		/* Free all chained buckets */
 		bucket = bucket->next;
 		while (bucket != NULL) {
-			mcl_bucket_s *next = bucket->next;
-			mcl_free_bucket_content(hashmap, bucket);
+			bucket_s *next = bucket->next;
+			free_bucket_content(hashmap, bucket);
 			free(bucket);
 			bucket = next;
 		}
@@ -124,7 +124,7 @@ void mcl_hm_free(mcl_hashmap_s *hashmap) {
 	free(hashmap);
 }
 
-void mcl_hm_free_bucket(mcl_bucket_s *bucket) {
+void hm_free_bucket(bucket_s *bucket) {
 	if (bucket == NULL) {
 		return;
 	}
@@ -134,17 +134,17 @@ void mcl_hm_free_bucket(mcl_bucket_s *bucket) {
 	free(bucket);
 }
 
-bool mcl_hm_set(mcl_hashmap_s *hashmap, void *key, void *value) {
+bool hm_set(hashmap_s *hashmap, void *key, void *value) {
 	if (hashmap == NULL || key == NULL || value == NULL) {
 		return false;
 	}
 
-	size_t mutex_id = mcl_get_mutex(hashmap, hashmap->hash_fn(key));
+	size_t mutex_id = get_mutex(hashmap, hashmap->hash_fn(key));
 	mtx_t *mutex = &(hashmap->locks[mutex_id]);
 	mtx_lock(mutex);
 
-	mcl_bucket_s *prev;
-	mcl_bucket_s *existing = mcl_find_bucket(hashmap, key, &prev);
+	bucket_s *prev;
+	bucket_s *existing = find_bucket(hashmap, key, &prev);
 
 	if (existing != NULL) {
 		/* Key exists, update value */
@@ -166,8 +166,8 @@ bool mcl_hm_set(mcl_hashmap_s *hashmap, void *key, void *value) {
 	}
 
 	/* Key doesn't exist, need to insert new bucket */
-	size_t index = mcl_get_bucket_index(hashmap, key);
-	mcl_bucket_s *bucket = &hashmap->map[index];
+	size_t index = get_bucket_index(hashmap, key);
+	bucket_s *bucket = &hashmap->map[index];
 
 	if (bucket->key == NULL) {
 		/* First bucket is empty, use it */
@@ -196,7 +196,7 @@ bool mcl_hm_set(mcl_hashmap_s *hashmap, void *key, void *value) {
 	}
 
 	/* Create new bucket and insert at head of collision chain */
-	mcl_bucket_s *new_bucket = malloc(sizeof(mcl_bucket_s));
+	bucket_s *new_bucket = malloc(sizeof(bucket_s));
 	if (new_bucket == NULL) {
 		mtx_unlock(mutex);
 
@@ -230,12 +230,12 @@ bool mcl_hm_set(mcl_hashmap_s *hashmap, void *key, void *value) {
 	return true;
 }
 
-static mcl_bucket_s *mcl_get_bucket_copy(mcl_bucket_s *from, size_t key_size, size_t value_size) {
-	mcl_bucket_s *copy = malloc(sizeof(mcl_bucket_s));
+static bucket_s *get_bucket_copy(bucket_s *from, size_t key_size, size_t value_size) {
+	bucket_s *copy = malloc(sizeof(bucket_s));
 	if (copy == NULL) {
 		return NULL;
 	}
-	memcpy(copy, from, sizeof(mcl_bucket_s));
+	memcpy(copy, from, sizeof(bucket_s));
 
 	copy->key = malloc(key_size);
 	if (copy->key == NULL) {
@@ -257,20 +257,20 @@ static mcl_bucket_s *mcl_get_bucket_copy(mcl_bucket_s *from, size_t key_size, si
 	return copy;
 }
 
-mcl_bucket_s *mcl_hm_get(mcl_hashmap_s *hashmap, void *key) {
+bucket_s *hm_get(hashmap_s *hashmap, void *key) {
 	if (hashmap == NULL || key == NULL) {
 		return NULL;
 	}
 
-	size_t mutex_id = mcl_get_mutex(hashmap, hashmap->hash_fn(key));
+	size_t mutex_id = get_mutex(hashmap, hashmap->hash_fn(key));
 	mtx_t *mutex = &(hashmap->locks[mutex_id]);
 	mtx_lock(mutex);
 
-	mcl_bucket_s *prev;
-	mcl_bucket_s *found = mcl_find_bucket(hashmap, key, &prev);
+	bucket_s *prev;
+	bucket_s *found = find_bucket(hashmap, key, &prev);
 
 	if (found) {
-		mcl_bucket_s *copy = mcl_get_bucket_copy(found, hashmap->key_size, hashmap->value_size);
+		bucket_s *copy = get_bucket_copy(found, hashmap->key_size, hashmap->value_size);
 
 		mtx_unlock(mutex);
 
@@ -282,17 +282,17 @@ mcl_bucket_s *mcl_hm_get(mcl_hashmap_s *hashmap, void *key) {
 	return NULL;
 }
 
-bool mcl_hm_remove(mcl_hashmap_s *hashmap, void *key) {
+bool hm_remove(hashmap_s *hashmap, void *key) {
 	if (hashmap == NULL || key == NULL) {
 		return false;
 	}
 
-	size_t mutex_id = mcl_get_mutex(hashmap, hashmap->hash_fn(key));
+	size_t mutex_id = get_mutex(hashmap, hashmap->hash_fn(key));
 	mtx_t *mutex = &(hashmap->locks[mutex_id]);
 	mtx_lock(mutex);
 
-	mcl_bucket_s *prev;
-	mcl_bucket_s *to_remove = mcl_find_bucket(hashmap, key, &prev);
+	bucket_s *prev;
+	bucket_s *to_remove = find_bucket(hashmap, key, &prev);
 
 	if (to_remove == NULL) {
 		mtx_unlock(mutex);
@@ -301,14 +301,14 @@ bool mcl_hm_remove(mcl_hashmap_s *hashmap, void *key) {
 	}
 
 	/* Free the content of the bucket */
-	mcl_free_bucket_content(hashmap, to_remove);
+	free_bucket_content(hashmap, to_remove);
 
 	/* Handle removal based on position in chain */
 	if (prev == NULL) {
 		/* Removing first bucket in chain */
 		if (to_remove->next != NULL) {
 			/* Move next bucket's content to first bucket and free the next bucket */
-			mcl_bucket_s *next_bucket = to_remove->next;
+			bucket_s *next_bucket = to_remove->next;
 			to_remove->key = next_bucket->key;
 			to_remove->value = next_bucket->value;
 			to_remove->next = next_bucket->next;

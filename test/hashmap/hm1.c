@@ -53,7 +53,7 @@ void test_hm1(void) {
 	/* This hashmap will contain names as keys and a custom type as value */
 	size_t key_size = sizeof(char) * MAX_STR_LEN;
 	size_t value_size = sizeof(int) + sizeof(char) * MAX_STR_LEN;
-	mcl_hashmap_s *map = mcl_hm_new(my_hash_func, my_equal_fun, my_free_key, my_free_value, key_size, value_size);
+	hashmap_s *map = hm_new(my_hash_func, my_equal_fun, my_free_key, my_free_value, key_size, value_size);
 	assert(map != NULL);
 
 	/* Make a new value */
@@ -63,11 +63,11 @@ void test_hm1(void) {
 	strncpy(p1.favourite_brand, "Ferrari", sizeof(p1.favourite_brand));
 
 	/* Insert a new pair */
-	assert(mcl_hm_set(map, "John", &p1));
+	assert(hm_set(map, "John", &p1));
 
 	/* Retrieve the data */
 	/* Remember to free the value from the get function */
-	mcl_bucket_s *john = mcl_hm_get(map, "John");
+	bucket_s *john = hm_get(map, "John");
 	assert(john != NULL);
 
 	char *name = (char *)john->key;
@@ -80,11 +80,11 @@ void test_hm1(void) {
 	assert(strcmp(fav_brand, "Ferrari") == 0);
 
 	/* Free the bucket */
-	mcl_hm_free_bucket(john);
+	hm_free_bucket(john);
 
 	/* Remove a key from hash map */
-	assert(mcl_hm_remove(map, "John"));
+	assert(hm_remove(map, "John"));
 
 	/* Deallocate */
-	mcl_hm_free(map);
+	hm_free(map);
 }
