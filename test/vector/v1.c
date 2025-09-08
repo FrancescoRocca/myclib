@@ -9,6 +9,17 @@ typedef struct my_elem {
 	int age;
 } my_elem_s;
 
+/* Functions used to iterate for each vector's element */
+static void multiply(void *elem) {
+	my_elem_s *e = (my_elem_s *)elem;
+	e->age = e->age * 2;
+}
+
+static void print(void *elem) {
+	my_elem_s *e = (my_elem_s *)elem;
+	printf("%s (%d)\n", e->name, e->age);
+}
+
 void test_v1() {
 	/* Allocate a new vector */
 	size_t elem_size = sizeof(my_elem_s);
@@ -43,6 +54,11 @@ void test_v1() {
 	vec_push(v, &last);
 	my_elem_s *lastv = (my_elem_s *)vec_pop(v);
 	free(lastv);
+
+	/* Iterate for each element */
+	vec_foreach(v, multiply);
+	/* Print each element */
+	vec_foreach(v, print);
 
 	/* Deallocate the vector */
 	vec_free(v);
