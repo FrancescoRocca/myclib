@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-mcl_queue_s *mcl_queue_new(size_t queue_size, size_t elem_size) {
-	mcl_queue_s *queue = malloc(sizeof(mcl_queue_s));
+queue_s *queue_new(size_t queue_size, size_t elem_size) {
+	queue_s *queue = malloc(sizeof(queue_s));
 	if (queue == NULL) {
 		return NULL;
 	}
@@ -33,7 +33,7 @@ mcl_queue_s *mcl_queue_new(size_t queue_size, size_t elem_size) {
 	return queue;
 }
 
-int mcl_queue_push(mcl_queue_s *queue, const void *elem) {
+int queue_push(queue_s *queue, const void *elem) {
 	int ret = mtx_lock(&queue->lock);
 	if (ret != thrd_success) {
 		return -1;
@@ -58,7 +58,7 @@ int mcl_queue_push(mcl_queue_s *queue, const void *elem) {
 	return 0;
 }
 
-int mcl_queue_pop(mcl_queue_s *queue, void *out_elem) {
+int queue_pop(queue_s *queue, void *out_elem) {
 	int ret = mtx_lock(&queue->lock);
 	if (ret != thrd_success) {
 		return -1;
@@ -82,7 +82,7 @@ int mcl_queue_pop(mcl_queue_s *queue, void *out_elem) {
 	return 0;
 }
 
-int mcl_queue_get_front(mcl_queue_s *queue, void *out) {
+int queue_get_front(queue_s *queue, void *out) {
 	int ret = mtx_lock(&queue->lock);
 	if (ret != thrd_success) {
 		return -1;
@@ -102,7 +102,7 @@ int mcl_queue_get_front(mcl_queue_s *queue, void *out) {
 	return 0;
 }
 
-int mcl_queue_get_rear(mcl_queue_s *queue, void *out) {
+int queue_get_rear(queue_s *queue, void *out) {
 	int ret = mtx_lock(&queue->lock);
 	if (ret != thrd_success) {
 		return -1;
@@ -129,7 +129,7 @@ int mcl_queue_get_rear(mcl_queue_s *queue, void *out) {
 	return 0;
 }
 
-void mcl_queue_free(mcl_queue_s *queue) {
+void queue_free(queue_s *queue) {
 	if (queue == NULL) {
 		return;
 	}
