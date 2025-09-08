@@ -111,8 +111,6 @@ void mcl_string_tolower(mcl_string_s *string);
  * @param string String where to search.
  * @param substring Substring to search.
  * @return Index of the first occurrence, -1 on failure.
- *
- * @note TODO
  */
 int mcl_string_find(mcl_string_s *string, const char *substring);
 

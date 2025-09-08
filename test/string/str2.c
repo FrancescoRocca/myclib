@@ -28,6 +28,10 @@ void test_str2(void) {
 	assert(mcl_string_length(s1) == 50);
 	assert(mcl_string_capacity(s1) == 64);
 
+	/* Find substring in string */
+	int pos = mcl_string_find(s1, "is");
+	assert(pos == 2);
+
 	mcl_string_free(s1);
 	mcl_string_free(s2);
 	mcl_string_free(extend_me);

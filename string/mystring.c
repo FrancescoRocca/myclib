@@ -239,7 +239,7 @@ char *mcl_string_cstr(mcl_string_s *string) {
 	tl_buffer_s *tb = (tl_buffer_s *)tss_get(buffer_key);
 	if (tb == NULL) {
 		/* Not found, make a new one */
-		tb = malloc(sizeof(*tb));
+		tb = malloc(sizeof(tl_buffer_s));
 		if (tb == NULL) {
 			mtx_unlock(&string->lock);
 
@@ -351,4 +351,58 @@ void mcl_string_tolower(mcl_string_s *string) {
 	}
 
 	mtx_unlock(&string->lock);
+}
+
+/* Build Longest Prefix Suffix array */
+static void build_lsp(int *lps, const char *substring, size_t sub_len) {
+	int len = 0;
+	int i = 1;
+
+	while (i < sub_len) {
+		if (substring[i] == substring[len]) {
+			lps[i++] = ++len;
+		} else {
+			if (len != 0) {
+				len = lps[len - 1];
+			} else {
+				lps[i++] = 0;
+			}
+		}
+	}
+}
+
+int mcl_string_find(mcl_string_s *string, const char *substring) {
+	if (string == NULL || substring == NULL) {
+		return -1;
+	}
+
+	/* Handle empty case */
+	if (strcmp(string->data, "") == 0) {
+		return -1;
+	}
+
+	size_t sub_len = strlen(substring);
+	int lps[sub_len];
+	memset(lps, 0, sizeof(lps));
+	build_lsp(lps, substring, sub_len);
+
+	size_t i = 0; /* string iterator */
+	size_t j = 0; /* substring iterator */
+	while (i < string->size) {
+		if (string->data[i] == substring[j]) {
+			i++;
+			j++;
+			if (j == sub_len) {
+				return i - j;
+			}
+		} else {
+			if (j != 0) {
+				j = lps[j - 1];
+			} else {
+				i++;
+			}
+		}
+	}
+
+	return -1;
 }
