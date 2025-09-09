@@ -6,9 +6,13 @@
 #include <stdio.h>
 
 void test_hm1();
+
 void test_q1();
+
 void test_str1();
 void test_str2();
+void test_str3();
+
 void test_v1();
 
 int main(void) {
@@ -25,6 +29,7 @@ int main(void) {
 	puts("==== [Running String tests] ====");
 	test_str1();
 	test_str2();
+	test_str3();
 	puts("OK!");
 	puts("");
 

@@ -1,7 +1,9 @@
 #include "mystring.h"
 
 #include <ctype.h>
+#include <stdarg.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <threads.h>
@@ -83,7 +85,7 @@ string_s *string_new(const char *text, size_t initial_capacity) {
 	str->data[str->size] = '\0';
 
 	/* Init mutex */
-	if (mtx_init(&str->lock, mtx_plain) != thrd_success) {
+	if (mtx_init(&str->lock, mtx_recursive) != thrd_success) {
 		free(str->data);
 		free(str);
 
@@ -306,28 +308,30 @@ int string_compare(string_s *s1, string_s *s2) {
 	return ret;
 }
 
-void string_clear(string_s *string) {
+int string_clear(string_s *string) {
 	if (string == NULL) {
-		return;
+		return -1;
 	}
 
 	if (mtx_lock(&string->lock) != thrd_success) {
-		return;
+		return -1;
 	}
 
 	memset(string->data, 0, string->size);
 	string->size = 0;
 
 	mtx_unlock(&string->lock);
+
+	return 0;
 }
 
-void string_toupper(string_s *string) {
+int string_toupper(string_s *string) {
 	if (string == NULL) {
-		return;
+		return -1;
 	}
 
 	if (mtx_lock(&string->lock) != thrd_success) {
-		return;
+		return -1;
 	}
 
 	for (size_t i = 0; i < string->size; ++i) {
@@ -335,15 +339,17 @@ void string_toupper(string_s *string) {
 	}
 
 	mtx_unlock(&string->lock);
+
+	return 0;
 }
 
-void string_tolower(string_s *string) {
+int string_tolower(string_s *string) {
 	if (string == NULL) {
-		return;
+		return -1;
 	}
 
 	if (mtx_lock(&string->lock) != thrd_success) {
-		return;
+		return -1;
 	}
 
 	for (size_t i = 0; i < string->size; ++i) {
@@ -351,10 +357,12 @@ void string_tolower(string_s *string) {
 	}
 
 	mtx_unlock(&string->lock);
+
+	return 0;
 }
 
 /* Build Longest Prefix Suffix array */
-static void build_lsp(int *lps, const char *substring, size_t sub_len) {
+static void build_lps(int *lps, const char *substring, size_t sub_len) {
 	size_t len = 0;
 	size_t i = 1;
 
@@ -376,15 +384,21 @@ int string_find(string_s *string, const char *substring) {
 		return -1;
 	}
 
+	if (mtx_lock(&string->lock) != thrd_success) {
+		return -1;
+	}
+
 	/* Handle empty case */
 	if (strcmp(string->data, "") == 0) {
+		mtx_unlock(&string->lock);
+
 		return -1;
 	}
 
 	size_t sub_len = strlen(substring);
 	int lps[sub_len];
 	memset(lps, 0, sizeof(lps));
-	build_lsp(lps, substring, sub_len);
+	build_lps(lps, substring, sub_len);
 
 	size_t i = 0; /* string iterator */
 	size_t j = 0; /* substring iterator */
@@ -393,6 +407,8 @@ int string_find(string_s *string, const char *substring) {
 			i++;
 			j++;
 			if (j == sub_len) {
+				mtx_unlock(&string->lock);
+
 				return i - j;
 			}
 		} else {
@@ -404,5 +420,115 @@ int string_find(string_s *string, const char *substring) {
 		}
 	}
 
+	mtx_unlock(&string->lock);
+
 	return -1;
+}
+
+string_s *string_format(const char *fmt, ...) {
+	if (fmt == NULL) {
+		return NULL;
+	}
+
+	va_list args;
+	va_start(args, fmt);
+	size_t len = vsnprintf(NULL, 0, fmt, args) + 1;
+	va_end(args);
+
+	string_s *str = string_new("", len);
+
+	va_start(args, fmt);
+	vsnprintf(str->data, str->capacity, fmt, args);
+	va_end(args);
+
+	return str;
+}
+
+int string_insert(string_s *string, size_t index, const char *text) {
+	if (string == NULL || text == NULL) {
+		return -1;
+	}
+
+	if (index > string->size) {
+		return -1;
+	}
+
+	if (mtx_lock(&string->lock) != thrd_success) {
+		return -1;
+	}
+
+	size_t text_len = strlen(text);
+	size_t new_size = string->size + text_len;
+
+	if (new_size + 1 > string->capacity) {
+		/* Reallocate buffer */
+		size_t new_cap = next_power_two(new_size + 1);
+		void *tmp = realloc(string->data, new_cap);
+		if (tmp == NULL) {
+			mtx_unlock(&string->lock);
+
+			return -1;
+		}
+		string->data = tmp;
+	}
+
+	/* Shift bytes */
+	memmove((char *)string->data + ((index + text_len) * sizeof(char)), (char *)string->data + (index * sizeof(char)), string->size - index + 1);
+	/* Insert new text */
+	memcpy((char *)string->data + (index * sizeof(char)), text, text_len);
+	string->size = new_size;
+	/* Ensure null termination */
+	string->data[string->size] = '\0';
+
+	mtx_unlock(&string->lock);
+
+	return 0;
+}
+
+int string_remove(string_s *string, size_t index, size_t length) {
+	if (string == NULL) {
+		return -1;
+	}
+
+	if (index + length > string->size) {
+		return -1;
+	}
+
+	if (mtx_lock(&string->lock) != thrd_success) {
+		return -1;
+	}
+
+	memmove((char *)string->data + (index * sizeof(char)), (char *)string->data + ((index + length) * sizeof(char)), string->size - length);
+	string->size -= length;
+	string->data[string->size] = '\0';
+
+	mtx_unlock(&string->lock);
+
+	return 0;
+}
+
+int string_replace(string_s *string, const char *old_text, const char *new_text) {
+	if (string == NULL || old_text == NULL || new_text == NULL) {
+		return -1;
+	}
+
+	if (mtx_lock(&string->lock) != thrd_success) {
+		return -1;
+	}
+
+	int pos;
+	size_t old_len = strlen(old_text);
+
+	while (1) {
+		pos = string_find(string, old_text);
+		if (pos == -1) {
+			break;
+		}
+		string_remove(string, pos, old_len);
+		string_insert(string, pos, new_text);
+	}
+
+	mtx_unlock(&string->lock);
+
+	return 0;
 }

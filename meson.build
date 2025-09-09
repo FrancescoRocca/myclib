@@ -18,6 +18,7 @@ testlib = files(
   'test/queue/q1.c',
   'test/string/str1.c',
   'test/string/str2.c',
+  'test/string/str3.c',
   'test/vector/v1.c',
 )
 

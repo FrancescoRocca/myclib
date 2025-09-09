@@ -52,8 +52,9 @@ int string_extend(string_s *destination, string_s *source);
  * @brief Clear the string content without freeing the memory.
  *
  * @param string String to clear.
+ * @return 0 on success, -1 on failure.
  */
-void string_clear(string_s *string);
+int string_clear(string_s *string);
 
 /**
  * @brief Get the current length of the string.
@@ -95,15 +96,17 @@ int string_compare(string_s *s1, string_s *s2);
  * @brief Convert the string to uppercase.
  *
  * @param string String to modify.
+ * @return 0 on success, -1 on failure.
  */
-void string_toupper(string_s *string);
+int string_toupper(string_s *string);
 
 /**
  * @brief Convert the string to lowercase.
  *
  * @param string String to modify.
+ * @return 0 on success, -1 on failure.
  */
-void string_tolower(string_s *string);
+int string_tolower(string_s *string);
 
 /**
  * @brief Find a substring inside a string.
@@ -113,5 +116,18 @@ void string_tolower(string_s *string);
  * @return Index of the first occurrence, -1 on failure.
  */
 int string_find(string_s *string, const char *substring);
+
+string_s *string_format(const char *fmt, ...);
+
+int string_insert(string_s *string, size_t index, const char *text);
+
+int string_replace(string_s *string, const char *old_text, const char *new_text);
+
+int string_remove(string_s *string, size_t index, size_t length);
+
+// TODO
+// string_trim(string_s *string)
+// string_reverse(string_s *string)
+// string_split(string_s *string, const char *delim, string_s ***out, size_t *count) ??
 
 #endif /* MYCLIB_STRING_H */

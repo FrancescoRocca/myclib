@@ -15,10 +15,12 @@ static void multiply(void *elem) {
 	e->age = e->age * 2;
 }
 
+/* Another way to use foreach
 static void print(void *elem) {
 	my_elem_s *e = (my_elem_s *)elem;
 	printf("%s (%d)\n", e->name, e->age);
 }
+*/
 
 void test_v1() {
 	/* Allocate a new vector */
@@ -58,7 +60,7 @@ void test_v1() {
 	/* Iterate for each element */
 	vec_foreach(v, multiply);
 	/* Print each element */
-	vec_foreach(v, print);
+	// vec_foreach(v, print);
 
 	/* Deallocate the vector */
 	vec_free(v);
