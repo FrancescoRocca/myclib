@@ -37,7 +37,7 @@ int vec_set(vec_s *vec, size_t index, void *value);
 
 int vec_clear(vec_s *vec);
 
-int vec_foreach(vec_s *vec, void (*fefn)(void *));
+int vec_foreach(vec_s *vec, void (*fefn)(size_t index, void *elem));
 
 // void *vec_sort(vec_s *, void (* sortfn)(void *a, void *b))
 

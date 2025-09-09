@@ -10,13 +10,13 @@ typedef struct my_elem {
 } my_elem_s;
 
 /* Functions used to iterate for each vector's element */
-static void multiply(void *elem) {
+static void multiply(size_t index, void *elem) {
 	my_elem_s *e = (my_elem_s *)elem;
 	e->age = e->age * 2;
 }
 
 /* Another way to use foreach
-static void print(void *elem) {
+static void print(size_t index, void *elem) {
 	my_elem_s *e = (my_elem_s *)elem;
 	printf("%s (%d)\n", e->name, e->age);
 }
