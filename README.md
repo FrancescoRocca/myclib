@@ -5,10 +5,12 @@ A small, personal C library for learning and experimentation.
 
 ## Features
 
-- Thread-safe hashmaps
-- Thread-safe dynamic strings
-- Thread-safe circular queues
-- Thread-safe vectors
+All the features listed are Thread-safe.
+
+- Hashmaps
+- Strings
+- Circular queues
+- Vectors
 - Stack
 
 ## Usage
