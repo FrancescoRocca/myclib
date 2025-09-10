@@ -4,10 +4,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*
+ * @brief Returns the mutex ID.
+ */
 static size_t get_mutex(hashmap_s *hashmap, size_t hash) { return hash % hashmap->num_locks; }
 
 static size_t get_bucket_index(hashmap_s *hashmap, void *key) {
-	unsigned int hash = hashmap->hash_fn(key);
+	unsigned int hash = hashmap->hash(key);
 	return hash % MYCLIB_HASHMAP_SIZE;
 }
 
@@ -17,13 +20,13 @@ static void free_bucket_content(hashmap_s *hashmap, bucket_s *bucket) {
 	}
 
 	/* Free key if free function is provided */
-	if (hashmap->free_key_fn != NULL && bucket->key != NULL) {
-		hashmap->free_key_fn(bucket->key);
+	if (hashmap->free_key != NULL && bucket->key != NULL) {
+		hashmap->free_key(bucket->key);
 	}
 
 	/* Free value if free function is provided */
-	if (hashmap->free_value_fn != NULL && bucket->value != NULL) {
-		hashmap->free_value_fn(bucket->value);
+	if (hashmap->free_value != NULL && bucket->value != NULL) {
+		hashmap->free_value(bucket->value);
 	}
 }
 
@@ -40,7 +43,7 @@ static bucket_s *find_bucket(hashmap_s *hashmap, void *key, bucket_s **prev) {
 
 	/* Search through the collision chain */
 	while (bucket != NULL) {
-		if (hashmap->equal_fn(bucket->key, key)) {
+		if (hashmap->equal(bucket->key, key)) {
 			return bucket;
 		}
 		*prev = bucket;
@@ -56,12 +59,14 @@ hashmap_s *hm_new(hash_f *hash_fn, equal_f *equal_fn, free_key_f *free_key_fn, f
 		return NULL;
 	}
 
-	hashmap->hash_fn = hash_fn;
-	hashmap->equal_fn = equal_fn;
-	hashmap->free_key_fn = free_key_fn;
-	hashmap->free_value_fn = free_value_fn;
+	hashmap->hash = hash_fn;
+	hashmap->equal = equal_fn;
+	hashmap->free_key = free_key_fn;
+	hashmap->free_value = free_value_fn;
 	hashmap->key_size = key_size;
 	hashmap->value_size = value_size;
+
+	hashmap->size = 0;
 
 	hashmap->num_locks = 64;
 	hashmap->locks = malloc(sizeof(mtx_t) * hashmap->num_locks);
@@ -73,7 +78,7 @@ hashmap_s *hm_new(hash_f *hash_fn, equal_f *equal_fn, free_key_f *free_key_fn, f
 
 	int ret;
 	for (size_t i = 0; i < hashmap->num_locks; ++i) {
-		ret = mtx_init(&(hashmap->locks[i]), mtx_plain);
+		ret = mtx_init(&(hashmap->locks[i]), mtx_recursive);
 		if (ret != thrd_success) {
 			/* Mutex failed */
 			for (size_t j = 0; j < i; ++j) {
@@ -139,17 +144,19 @@ bool hm_set(hashmap_s *hashmap, void *key, void *value) {
 		return false;
 	}
 
-	size_t mutex_id = get_mutex(hashmap, hashmap->hash_fn(key));
+	size_t mutex_id = get_mutex(hashmap, hashmap->hash(key));
 	mtx_t *mutex = &(hashmap->locks[mutex_id]);
-	mtx_lock(mutex);
+	if (mtx_lock(mutex) != thrd_success) {
+		return false;
+	}
 
 	bucket_s *prev;
 	bucket_s *existing = find_bucket(hashmap, key, &prev);
 
 	if (existing != NULL) {
 		/* Key exists, update value */
-		if (hashmap->free_value_fn != NULL && existing->value != NULL) {
-			hashmap->free_value_fn(existing->value);
+		if (hashmap->free_value != NULL && existing->value != NULL) {
+			hashmap->free_value(existing->value);
 		}
 
 		existing->value = malloc(hashmap->value_size);
@@ -160,6 +167,10 @@ bool hm_set(hashmap_s *hashmap, void *key, void *value) {
 		}
 
 		memcpy(existing->value, value, hashmap->value_size);
+
+		/* Increase size */
+		hashmap->size++;
+
 		mtx_unlock(mutex);
 
 		return true;
@@ -187,6 +198,7 @@ bool hm_set(hashmap_s *hashmap, void *key, void *value) {
 			return false;
 		}
 
+		hashmap->size++;
 		memcpy(bucket->key, key, hashmap->key_size);
 		memcpy(bucket->value, value, hashmap->value_size);
 		bucket->next = NULL;
@@ -220,6 +232,7 @@ bool hm_set(hashmap_s *hashmap, void *key, void *value) {
 		return false;
 	}
 
+	hashmap->size++;
 	memcpy(new_bucket->key, key, hashmap->key_size);
 	memcpy(new_bucket->value, value, hashmap->value_size);
 	new_bucket->next = bucket->next;
@@ -262,9 +275,11 @@ bucket_s *hm_get(hashmap_s *hashmap, void *key) {
 		return NULL;
 	}
 
-	size_t mutex_id = get_mutex(hashmap, hashmap->hash_fn(key));
+	size_t mutex_id = get_mutex(hashmap, hashmap->hash(key));
 	mtx_t *mutex = &(hashmap->locks[mutex_id]);
-	mtx_lock(mutex);
+	if (mtx_lock(mutex) != thrd_success) {
+		return NULL;
+	}
 
 	bucket_s *prev;
 	bucket_s *found = find_bucket(hashmap, key, &prev);
@@ -287,9 +302,11 @@ bool hm_remove(hashmap_s *hashmap, void *key) {
 		return false;
 	}
 
-	size_t mutex_id = get_mutex(hashmap, hashmap->hash_fn(key));
+	size_t mutex_id = get_mutex(hashmap, hashmap->hash(key));
 	mtx_t *mutex = &(hashmap->locks[mutex_id]);
-	mtx_lock(mutex);
+	if (mtx_lock(mutex) != thrd_success) {
+		return false;
+	}
 
 	bucket_s *prev;
 	bucket_s *to_remove = find_bucket(hashmap, key, &prev);
@@ -325,7 +342,68 @@ bool hm_remove(hashmap_s *hashmap, void *key) {
 		free(to_remove);
 	}
 
+	hashmap->size--;
+
 	mtx_unlock(mutex);
 
 	return true;
+}
+
+size_t hm_size(hashmap_s *hashmap) {
+	if (hashmap == NULL) {
+		return 0;
+	}
+
+	/* Use the first mutex */
+	mtx_t *mutex = &hashmap->locks[0];
+	if (mtx_lock(mutex) != thrd_success) {
+		return 0;
+	}
+
+	size_t size = hashmap->size;
+
+	mtx_unlock(mutex);
+
+	return size;
+}
+
+bool hm_contains(hashmap_s *hashmap, void *key) {
+	if (hashmap == NULL || key == NULL) {
+		return false;
+	}
+
+	bool res = true;
+
+	size_t mutex_id = get_mutex(hashmap, hashmap->hash(key));
+	mtx_t *mutex = &hashmap->locks[mutex_id];
+	if (mtx_lock(mutex) != thrd_success) {
+		return false;
+	}
+
+	bucket_s *bucket = hm_get(hashmap, key);
+	if (bucket == NULL) {
+		res = false;
+	} else {
+		hm_free_bucket(bucket);
+	}
+
+	mtx_unlock(mutex);
+
+	return res;
+}
+
+void hm_foreach(hashmap_s *hashmap, void (*callback)(bucket_s *bucket)) {
+	if (hashmap == NULL || callback == NULL) {
+		return;
+	}
+
+	// TODO
+}
+
+void hm_clear(hashmap_s *hashmap) {
+	if (hashmap == NULL) {
+		return;
+	}
+
+	// TODO
 }

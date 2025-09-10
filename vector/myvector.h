@@ -118,10 +118,10 @@ int vec_clear(vec_s *vec);
  * @brief Iterate over all elements of the vector.
  *
  * @param vec Vector.
- * @param fefn Callback function: receives index and element pointer.
+ * @param callback Receives index and element pointer.
  * @return 0 on success, -1 on failure.
  */
-int vec_foreach(vec_s *vec, void (*fefn)(size_t index, void *elem));
+int vec_foreach(vec_s *vec, void (*callback)(size_t index, void *elem));
 
 /**
  * @brief Sort the vector using qsort().

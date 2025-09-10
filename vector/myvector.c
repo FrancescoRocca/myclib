@@ -282,8 +282,8 @@ int vec_set(vec_s *vec, size_t index, void *value) {
 	return 0;
 }
 
-int vec_foreach(vec_s *vec, void (*fefn)(size_t index, void *elem)) {
-	if (vec == NULL || fefn == NULL) {
+int vec_foreach(vec_s *vec, void (*callback)(size_t index, void *elem)) {
+	if (vec == NULL || callback == NULL) {
 		return -1;
 	}
 
@@ -292,7 +292,7 @@ int vec_foreach(vec_s *vec, void (*fefn)(size_t index, void *elem)) {
 	}
 
 	for (size_t i = 0; i < vec->size; ++i) {
-		fefn(i, (char *)vec->data + (i * vec->elem_size));
+		callback(i, (char *)vec->data + (i * vec->elem_size));
 	}
 
 	mtx_unlock(&vec->lock);
