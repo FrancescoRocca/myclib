@@ -117,17 +117,43 @@ int string_tolower(string_s *string);
  */
 int string_find(string_s *string, const char *substring);
 
+/**
+ * @brief Create a formatted string (like printf).
+ *
+ * @param fmt Format string.
+ * @param ... Arguments for format.
+ * @return New string, or NULL on failure.
+ */
 string_s *string_format(const char *fmt, ...);
 
+/**
+ * @brief Insert text at a specific position.
+ *
+ * @param string String to modify.
+ * @param index Position where to insert.
+ * @param text Text to insert.
+ * @return 0 on success, -1 on failure.
+ */
 int string_insert(string_s *string, size_t index, const char *text);
 
+/**
+ * @brief Replace all occurrences of a substring with another.
+ *
+ * @param string String to modify.
+ * @param old_text Substring to replace.
+ * @param new_text Replacement text.
+ * @return 0 on success, -1 on failure.
+ */
 int string_replace(string_s *string, const char *old_text, const char *new_text);
 
+/**
+ * @brief Remove part of the string.
+ *
+ * @param string String to modify.
+ * @param index Starting position.
+ * @param length Number of characters to remove.
+ * @return 0 on success, -1 on failure.
+ */
 int string_remove(string_s *string, size_t index, size_t length);
-
-// TODO
-// string_trim(string_s *string)
-// string_reverse(string_s *string)
-// string_split(string_s *string, const char *delim, string_s ***out, size_t *count) ??
 
 #endif /* MYCLIB_STRING_H */
