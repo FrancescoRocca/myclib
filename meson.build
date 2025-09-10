@@ -10,6 +10,7 @@ src = files(
   'queue/myqueue.c',
   'string/mystring.c',
   'vector/myvector.c',
+  'stack/mystack.c',
 )
 
 testlib = files(
@@ -20,6 +21,7 @@ testlib = files(
   'test/string/str2.c',
   'test/string/str3.c',
   'test/vector/v1.c',
+  'test/stack/s1.c',
 )
 
 sources = src + testlib

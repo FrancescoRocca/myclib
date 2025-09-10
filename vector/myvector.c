@@ -305,7 +305,13 @@ int vec_sort(vec_s *vec, int (*cmp)(const void *a, const void *b)) {
 		return -1;
 	}
 
+	if (mtx_lock(&vec->lock) != thrd_success) {
+		return -1;
+	}
+
 	qsort(vec->data, vec->size, vec->elem_size, cmp);
+
+	mtx_unlock(&vec->lock);
 
 	return 0;
 }

@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 #include "../../vector/myvector.h"
@@ -15,11 +14,12 @@ static void multiply(size_t index, void *elem) {
 	e->age = e->age * 2;
 }
 
-/* Another way to use foreach */
+/* Another way to use foreach
 static void print(size_t index, void *elem) {
 	my_elem_s *e = (my_elem_s *)elem;
 	printf("%s (%d)\n", e->name, e->age);
 }
+*/
 
 /* Compare function used to sort */
 int my_cmp(const void *a, const void *b) {
@@ -70,13 +70,10 @@ void test_v1() {
 	/* Iterate for each element */
 	vec_foreach(v, multiply);
 	/* Print each element */
-	puts("Before sort:");
-	vec_foreach(v, print);
+	// vec_foreach(v, print);
 
 	/* Sort */
 	vec_sort(v, my_cmp);
-	puts("After sort:");
-	vec_foreach(v, print);
 
 	/* Deallocate the vector */
 	vec_free(v);

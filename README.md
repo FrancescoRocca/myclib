@@ -9,6 +9,7 @@ A small, personal C library for learning and experimentation.
 - Thread-safe dynamic strings
 - Thread-safe circular queues
 - Thread-safe vectors
+- Stack
 
 ## Usage
 

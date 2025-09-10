@@ -5,15 +5,17 @@
 #include <assert.h>
 #include <stdio.h>
 
-void test_hm1();
+void test_hm1(void);
 
-void test_q1();
+void test_q1(void);
 
-void test_str1();
-void test_str2();
-void test_str3();
+void test_str1(void);
+void test_str2(void);
+void test_str3(void);
 
-void test_v1();
+void test_v1(void);
+
+void test_s1(void);
 
 int main(void) {
 	puts("==== [Running Hashmap tests] ====");
@@ -35,6 +37,11 @@ int main(void) {
 
 	puts("==== [Running Vector tests] ====");
 	test_v1();
+	puts("OK!");
+	puts("");
+
+	puts("==== [Running Stack tests] ====");
+	test_s1();
 	puts("OK!");
 	puts("");
 
