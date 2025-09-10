@@ -15,12 +15,20 @@ static void multiply(size_t index, void *elem) {
 	e->age = e->age * 2;
 }
 
-/* Another way to use foreach
+/* Another way to use foreach */
 static void print(size_t index, void *elem) {
 	my_elem_s *e = (my_elem_s *)elem;
 	printf("%s (%d)\n", e->name, e->age);
 }
-*/
+
+/* Compare function used to sort */
+int my_cmp(const void *a, const void *b) {
+	/* Sort by age */
+	my_elem_s *ma = (my_elem_s *)a;
+	my_elem_s *mb = (my_elem_s *)b;
+
+	return ma->age - mb->age;
+}
 
 void test_v1() {
 	/* Allocate a new vector */
@@ -47,7 +55,9 @@ void test_v1() {
 
 	/* Insert an element */
 	vec_push(v, &e1);
+	e1.age = 25;
 	vec_push(v, &e1);
+	e1.age = 19;
 	vec_insert(v, 2, &e1);
 	my_elem_s last = {
 		.age = 33,
@@ -60,7 +70,13 @@ void test_v1() {
 	/* Iterate for each element */
 	vec_foreach(v, multiply);
 	/* Print each element */
-	// vec_foreach(v, print);
+	puts("Before sort:");
+	vec_foreach(v, print);
+
+	/* Sort */
+	vec_sort(v, my_cmp);
+	puts("After sort:");
+	vec_foreach(v, print);
 
 	/* Deallocate the vector */
 	vec_free(v);

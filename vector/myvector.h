@@ -39,7 +39,8 @@ int vec_clear(vec_s *vec);
 
 int vec_foreach(vec_s *vec, void (*fefn)(size_t index, void *elem));
 
-// void *vec_sort(vec_s *, void (* sortfn)(void *a, void *b))
+/* Wrapper around qsort() */
+int vec_sort(vec_s *vec, int (*cmp)(const void *a, const void *b));
 
 void vec_free(vec_s *vec);
 

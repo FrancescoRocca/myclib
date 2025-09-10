@@ -299,3 +299,13 @@ int vec_foreach(vec_s *vec, void (*fefn)(size_t index, void *elem)) {
 
 	return 0;
 }
+
+int vec_sort(vec_s *vec, int (*cmp)(const void *a, const void *b)) {
+	if (vec == NULL || cmp == NULL) {
+		return -1;
+	}
+
+	qsort(vec->data, vec->size, vec->elem_size, cmp);
+
+	return 0;
+}
