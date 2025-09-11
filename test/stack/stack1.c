@@ -3,7 +3,7 @@
 
 #include "../../stack/mystack.h"
 
-void test_s1(void) {
+void test_stack1(void) {
 	stack_s *stack = stack_new(32, sizeof(int));
 	int num = 10;
 	stack_push(stack, &num);

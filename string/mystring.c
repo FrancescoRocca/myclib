@@ -363,7 +363,7 @@ int string_tolower(string_s *string) {
 
 /* Build Longest Prefix Suffix array */
 static void build_lps(int *lps, const char *substring, size_t sub_len) {
-	size_t len = 0;
+	int len = 0;
 	size_t i = 1;
 
 	while (i < sub_len) {
@@ -396,8 +396,9 @@ int string_find(string_s *string, const char *substring) {
 	}
 
 	size_t sub_len = strlen(substring);
-	int lps[sub_len];
-	memset(lps, 0, sizeof(lps));
+
+	int *lps = (int *)malloc(sub_len * sizeof(int));
+	memset(lps, 0, sub_len * sizeof(int));
 	build_lps(lps, substring, sub_len);
 
 	size_t i = 0; /* string iterator */
@@ -407,9 +408,10 @@ int string_find(string_s *string, const char *substring) {
 			i++;
 			j++;
 			if (j == sub_len) {
+				free(lps);
 				mtx_unlock(&string->lock);
 
-				return i - j;
+				return (int)(i - j);
 			}
 		} else {
 			if (j != 0) {
@@ -419,6 +421,8 @@ int string_find(string_s *string, const char *substring) {
 			}
 		}
 	}
+
+	free(lps);
 
 	mtx_unlock(&string->lock);
 

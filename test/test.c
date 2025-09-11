@@ -7,15 +7,17 @@
 
 void test_hm1(void);
 
-void test_q1(void);
+void test_queue1(void);
 
 void test_str1(void);
 void test_str2(void);
 void test_str3(void);
 
-void test_v1(void);
+void test_vec1(void);
 
-void test_s1(void);
+void test_stack1(void);
+
+void test_socket1();
 
 int main(void) {
 	puts("==== [Running Hashmap tests] ====");
@@ -24,7 +26,7 @@ int main(void) {
 	puts("");
 
 	puts("==== [Running Queue tests] ====");
-	test_q1();
+	test_queue1();
 	puts("OK!");
 	puts("");
 
@@ -36,12 +38,17 @@ int main(void) {
 	puts("");
 
 	puts("==== [Running Vector tests] ====");
-	test_v1();
+	test_vec1();
 	puts("OK!");
 	puts("");
 
 	puts("==== [Running Stack tests] ====");
-	test_s1();
+	test_stack1();
+	puts("OK!");
+	puts("");
+
+	puts("==== [Running Socket tests] ====");
+	test_socket1();
 	puts("OK!");
 	puts("");
 

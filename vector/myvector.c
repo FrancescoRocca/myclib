@@ -90,11 +90,11 @@ void vec_free(vec_s *vec) {
 
 size_t vec_size(vec_s *vec) {
 	if (vec == NULL) {
-		return -1;
+		return (size_t)-1;
 	}
 
 	if (mtx_lock(&vec->lock) != thrd_success) {
-		return -1;
+		return (size_t)-1;
 	}
 
 	size_t size = vec->size;
@@ -106,11 +106,11 @@ size_t vec_size(vec_s *vec) {
 
 size_t vec_cap(vec_s *vec) {
 	if (vec == NULL) {
-		return -1;
+		return (size_t)-1;
 	}
 
 	if (mtx_lock(&vec->lock) != thrd_success) {
-		return -1;
+		return (size_t)-1;
 	}
 
 	size_t cap = vec->capacity;

@@ -13,6 +13,16 @@ All the features listed are Thread-safe.
 - Vectors
 - Stack
 
+## Installation
+
+Clone the repo, and then using `meson` install it:
+
+```
+$ meson setup build
+$ cd build
+$ meson install
+```
+
 ## Usage
 
 See the `test/` folder for examples.
