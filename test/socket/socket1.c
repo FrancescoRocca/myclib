@@ -1,7 +1,6 @@
+#include <myclib/mysocket.h>
 #include <stdio.h>
 #include <string.h>
-
-#include "../../socket/mysocket.h"
 
 void test_socket1(void) {
 	sock_platform_init();

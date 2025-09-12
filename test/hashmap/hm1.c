@@ -1,9 +1,8 @@
 #include <assert.h>
+#include <myclib/myhashmap.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "../../hashmap/myhashmap.h"
 
 #define MAX_STR_LEN 64
 

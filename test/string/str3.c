@@ -1,7 +1,6 @@
 #include <assert.h>
+#include <myclib/mystring.h>
 #include <string.h>
-
-#include "../../string/mystring.h"
 
 void test_str3(void) {
 	/* Make a new string from format */

@@ -1,7 +1,6 @@
 #include <assert.h>
+#include <myclib/mystring.h>
 #include <string.h>
-
-#include "../../string/mystring.h"
 
 void test_str2(void) {
 	string_s *s1 = string_new("Hello, world!", 0);

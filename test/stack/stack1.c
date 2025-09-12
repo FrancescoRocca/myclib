@@ -1,7 +1,6 @@
 #include <assert.h>
+#include <myclib/mystack.h>
 #include <stdlib.h>
-
-#include "../../stack/mystack.h"
 
 void test_stack1(void) {
 	stack_s *stack = stack_new(32, sizeof(int));

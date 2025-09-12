@@ -1,9 +1,8 @@
 #include <assert.h>
+#include <myclib/mystring.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "../../string/mystring.h"
 
 void test_str1(void) {
 	size_t length;

@@ -1,7 +1,6 @@
 #include <assert.h>
+#include <myclib/myvector.h>
 #include <stdlib.h>
-
-#include "../../vector/myvector.h"
 
 typedef struct my_elem {
 	char name[32];
