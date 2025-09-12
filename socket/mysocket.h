@@ -8,7 +8,11 @@
 #include <ws2tcpip.h>
 #else
 /* Unix */
-#define __USE_XOPEN2K
+
+#ifndef __USE_XOPEN2K
+#define __USE_XOPEN2K 1
+#endif
+
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
