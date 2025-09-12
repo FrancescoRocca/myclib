@@ -1,8 +1,8 @@
 project(
   'testlib',
   'c',
-  version: '0.1',
-  default_options: ['c_std=c17', 'warning_level=3'],
+  version: '0.2',
+  default_options: ['c_std=c18', 'warning_level=3'],
 )
 
 cc = meson.get_compiler('c')
