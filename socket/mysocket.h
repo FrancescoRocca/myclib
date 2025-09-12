@@ -3,15 +3,18 @@
 
 #ifdef _WIN32
 /* Windows */
+#define _WIN32_WINNT 0x0600
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #else
 /* Unix */
+#define __USE_XOPEN2K
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 #endif
 
