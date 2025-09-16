@@ -35,3 +35,50 @@ int sock_platform_shutdown() {
 
 	return 0;
 }
+
+int sock_readall(int socket, void *out, size_t n) {
+	char *p = (char *)out;
+	size_t bytes_to_read = n;
+	int bytes_read = 0;
+
+	while (bytes_to_read > 0) {
+		bytes_read = recv(socket, p, bytes_to_read, 0);
+
+		if (bytes_read > 0) {
+			p += bytes_read;
+			bytes_to_read -= bytes_read;
+		} else if (bytes_read == 0) {
+			break;
+		} else {
+			if (errno == EINTR) {
+				continue;
+			}
+			return -1;
+		}
+	}
+
+	return n - bytes_to_read;
+}
+
+int sock_writeall(int socket, const void *buf, size_t n) {
+	const char *p = (char *)buf;
+	size_t bytes_to_write = n;
+	int bytes_written;
+
+	while (bytes_to_write > 0) {
+		bytes_written = send(socket, p, bytes_to_write, 0);
+
+		if (bytes_written >= 0) {
+			p += bytes_written;
+			bytes_to_write -= bytes_written;
+		} else {
+			if (errno == EINTR) {
+				continue;
+			}
+
+			return -1;
+		}
+	}
+
+	return n;
+}

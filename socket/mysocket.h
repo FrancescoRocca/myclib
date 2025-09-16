@@ -28,6 +28,10 @@ int sock_platform_init();
 /* Use this to close a socket */
 int sock_close(int socket);
 
+/* Read/Write all to socket */
+int sock_readall(int socket, void *out, size_t n);
+int sock_writeall(int socket, const void *buf, size_t n);
+
 /* Use at exit */
 int sock_platform_shutdown();
 
