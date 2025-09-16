@@ -1,5 +1,7 @@
 #include "mysocket.h"
 
+#include <errno.h>
+
 int sock_platform_init() {
 #ifdef _WIN32
 	WSADATA wsaData;

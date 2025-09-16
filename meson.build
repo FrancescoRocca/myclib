@@ -35,7 +35,11 @@ winsock_dep = cc.find_library('ws2_32', required: false)
 
 # Include directories
 inc_dir = include_directories('string', 'queue', 'hashmap', 'vector', 'stack', 'socket')
-win_inc_dir = include_directories('c:/include/')
+if host_machine.system() == 'windows'
+  win_inc_dir = include_directories('c:/include/')
+else
+  win_inc_dir = []
+endif
 
 # Static library
 myclib_lib = static_library(
