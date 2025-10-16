@@ -1,6 +1,6 @@
 #include "mysocket.h"
 
-#include <errno.h>
+#include <errno.h>
 
 int sock_platform_init() {
 #ifdef _WIN32
@@ -38,32 +38,38 @@ int sock_platform_shutdown() {
 	return 0;
 }
 
-int sock_readall(int socket, void *out, size_t n) {
-	char *p = (char *)out;
-	size_t bytes_to_read = n;
-	int bytes_read = 0;
+int sock_readall(int sockfd, void *buf, size_t bufsize) {
+    char *p = (char *)buf;
+    size_t total_read = 0;
 
-	while (bytes_to_read > 0) {
-		bytes_read = recv(socket, p, bytes_to_read, 0);
+    while (1) {
+        int n = recv(sockfd, p, bufsize - total_read, 0);
 
-		if (bytes_read > 0) {
-			p += bytes_read;
-			bytes_to_read -= bytes_read;
-		} else if (bytes_read == 0) {
-			break;
-		} else {
-			if (errno == EINTR) {
-				continue;
-			}
-			return -1;
-		}
-	}
+        if (n > 0) {
+            p += n;
+            total_read += n;
 
-	return n - bytes_to_read;
+            if (total_read == bufsize) {
+                break;
+            }
+        } else if (n == 0) {
+            break;
+        } else {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                break;
+            } else if (errno == EINTR) {
+                continue;
+            } else {
+                return -1;
+            }
+        }
+    }
+
+    return total_read;
 }
 
-int sock_writeall(int socket, const void *buf, size_t n) {
-	const char *p = (char *)buf;
+int sock_writeall(int socket, const void* buf, size_t n) {
+	const char* p = (char*)buf;
 	size_t bytes_to_write = n;
 	int bytes_written;
 
