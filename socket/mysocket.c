@@ -39,37 +39,37 @@ int sock_platform_shutdown() {
 }
 
 int sock_readall(int sockfd, void *buf, size_t bufsize) {
-    char *p = (char *)buf;
-    size_t total_read = 0;
+	char *p = (char *)buf;
+	size_t total_read = 0;
 
-    while (1) {
-        int n = recv(sockfd, p, bufsize - total_read, 0);
+	while (1) {
+		int n = recv(sockfd, p, bufsize - total_read, 0);
 
-        if (n > 0) {
-            p += n;
-            total_read += n;
+		if (n > 0) {
+			p += n;
+			total_read += n;
 
-            if (total_read == bufsize) {
-                break;
-            }
-        } else if (n == 0) {
-            break;
-        } else {
-            if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                break;
-            } else if (errno == EINTR) {
-                continue;
-            } else {
-                return -1;
-            }
-        }
-    }
+			if (total_read == bufsize) {
+				break;
+			}
+		} else if (n == 0) {
+			break;
+		} else {
+			if (errno == EAGAIN || errno == EWOULDBLOCK) {
+				break;
+			} else if (errno == EINTR) {
+				continue;
+			} else {
+				return -1;
+			}
+		}
+	}
 
-    return total_read;
+	return total_read;
 }
 
-int sock_writeall(int socket, const void* buf, size_t n) {
-	const char* p = (char*)buf;
+int sock_writeall(int socket, const void *buf, size_t n) {
+	const char *p = (char *)buf;
 	size_t bytes_to_write = n;
 	int bytes_written;
 

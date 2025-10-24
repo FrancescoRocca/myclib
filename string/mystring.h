@@ -18,7 +18,8 @@ typedef struct string {
  * @brief Create a new string initialized with the given text.
  *
  * @param text Initial text.
- * @param initial_capacity Initial buffer capacity (including null terminator). Pass 0 to auto-calculate.
+ * @param initial_capacity Initial buffer capacity (including null terminator). Pass 0 to
+ * auto-calculate.
  * @return Pointer to the new string, or NULL on failure.
  */
 string_s *string_new(const char *text, size_t initial_capacity);

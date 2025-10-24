@@ -38,7 +38,9 @@ bool my_equal_fun(const void *key_a, const void *key_b) {
 }
 
 /* And our last two functions, the free key and value called inside mcl_hm_remove() */
-void my_free_key(void *key) { free(key); }
+void my_free_key(void *key) {
+	free(key);
+}
 
 void my_free_value(void *value) {
 	struct my_custom_type *mct = (struct my_custom_type *)value;
@@ -52,7 +54,8 @@ void test_hm1(void) {
 	/* This hashmap will contain names as keys and a custom type as value */
 	size_t key_size = sizeof(char) * MAX_STR_LEN;
 	size_t value_size = sizeof(int) + sizeof(char) * MAX_STR_LEN;
-	hashmap_s *map = hm_new(my_hash_func, my_equal_fun, my_free_key, my_free_value, key_size, value_size);
+	hashmap_s *map =
+		hm_new(my_hash_func, my_equal_fun, my_free_key, my_free_value, key_size, value_size);
 	assert(map != NULL);
 
 	/* Make a new value */

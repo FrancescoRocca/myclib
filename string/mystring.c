@@ -27,7 +27,9 @@ static void buffer_destructor(void *buf) {
 	free(tb);
 }
 
-static void buffer_key_init(void) { tss_create(&buffer_key, buffer_destructor); }
+static void buffer_key_init(void) {
+	tss_create(&buffer_key, buffer_destructor);
+}
 
 /* Returns the next power of two of a number */
 static size_t next_power_two(size_t len) {
@@ -477,7 +479,8 @@ int string_insert(string_s *string, size_t index, const char *text) {
 	}
 
 	/* Shift bytes */
-	memmove((char *)string->data + ((index + text_len) * sizeof(char)), (char *)string->data + (index * sizeof(char)), string->size - index + 1);
+	memmove((char *)string->data + ((index + text_len) * sizeof(char)),
+			(char *)string->data + (index * sizeof(char)), string->size - index + 1);
 	/* Insert new text */
 	memcpy((char *)string->data + (index * sizeof(char)), text, text_len);
 	string->size = new_size;
@@ -502,7 +505,8 @@ int string_remove(string_s *string, size_t index, size_t length) {
 		return -1;
 	}
 
-	memmove((char *)string->data + (index * sizeof(char)), (char *)string->data + ((index + length) * sizeof(char)), string->size - length);
+	memmove((char *)string->data + (index * sizeof(char)),
+			(char *)string->data + ((index + length) * sizeof(char)), string->size - length);
 	string->size -= length;
 	string->data[string->size] = '\0';
 

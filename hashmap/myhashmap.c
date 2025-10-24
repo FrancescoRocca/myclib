@@ -7,7 +7,9 @@
 /*
  * @brief Returns the mutex ID.
  */
-static size_t get_mutex(hashmap_s *hashmap, size_t hash) { return hash % hashmap->num_locks; }
+static size_t get_mutex(hashmap_s *hashmap, size_t hash) {
+	return hash % hashmap->num_locks;
+}
 
 static size_t get_bucket_index(hashmap_s *hashmap, void *key) {
 	unsigned int hash = hashmap->hash(key);
@@ -53,7 +55,8 @@ static bucket_s *find_bucket(hashmap_s *hashmap, void *key, bucket_s **prev) {
 	return NULL;
 }
 
-hashmap_s *hm_new(hash_f *hash_fn, equal_f *equal_fn, free_key_f *free_key_fn, free_value_f *free_value_fn, size_t key_size, size_t value_size) {
+hashmap_s *hm_new(hash_f *hash_fn, equal_f *equal_fn, free_key_f *free_key_fn,
+				  free_value_f *free_value_fn, size_t key_size, size_t value_size) {
 	hashmap_s *hashmap = malloc(sizeof(hashmap_s));
 	if (hashmap == NULL) {
 		return NULL;

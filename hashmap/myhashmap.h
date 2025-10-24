@@ -75,7 +75,8 @@ typedef struct hashmap {
  * @param[in] value_size Size in bytes of each value to be stored.
  * @return A pointer to the newly initialized hash map, or NULL on failure.
  */
-hashmap_s *hm_new(hash_f *hash, equal_f *equal, free_key_f *free_key, free_value_f *free_value, size_t key_size, size_t value_size);
+hashmap_s *hm_new(hash_f *hash, equal_f *equal, free_key_f *free_key, free_value_f *free_value,
+				  size_t key_size, size_t value_size);
 
 /**
  * @brief Free all resources used by the hash map.
@@ -101,7 +102,8 @@ void hm_free_bucket(bucket_s *bucket);
  * @param[in] hashmap Pointer to the hash map.
  * @param[in] key Pointer to the key to insert (will be copied, must not be NULL).
  * @param[in] value Pointer to the value to insert (will be copied, must not be NULL).
- * @return true if the operation succeeded, false on failure (NULL hashmap/key/value or memory allocation failure).
+ * @return true if the operation succeeded, false on failure (NULL hashmap/key/value or memory
+ * allocation failure).
  */
 bool hm_set(hashmap_s *hashmap, void *key, void *value);
 
