@@ -1,5 +1,5 @@
+#include "../vector/myvector.h"
 #include <assert.h>
-#include <myclib/myvector.h>
 #include <stdlib.h>
 
 typedef struct my_elem {
@@ -29,7 +29,7 @@ int my_cmp(const void *a, const void *b) {
 	return ma->age - mb->age;
 }
 
-void test_vec1() {
+void test_vec1(void) {
 	/* Allocate a new vector */
 	size_t elem_size = sizeof(my_elem_s);
 	vec_s *v = vec_new(10, elem_size);

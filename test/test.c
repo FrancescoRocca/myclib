@@ -17,7 +17,7 @@ void test_vec1(void);
 
 void test_stack1(void);
 
-void test_socket1();
+void test_socket1(void);
 
 int main(void) {
 	puts("==== [Running Hashmap tests] ====");

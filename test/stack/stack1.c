@@ -1,5 +1,5 @@
+#include "../stack/mystack.h"
 #include <assert.h>
-#include <myclib/mystack.h>
 #include <stdlib.h>
 
 void test_stack1(void) {

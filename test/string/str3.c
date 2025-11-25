@@ -1,5 +1,5 @@
+#include "../string/mystring.h"
 #include <assert.h>
-#include <myclib/mystring.h>
 #include <string.h>
 
 void test_str3(void) {

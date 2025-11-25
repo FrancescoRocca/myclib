@@ -1,5 +1,5 @@
+#include "../queue/myqueue.h"
 #include <assert.h>
-#include <myclib/myqueue.h>
 
 void test_queue1(void) {
 	/* Allocate a new queue */

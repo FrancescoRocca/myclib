@@ -1,7 +1,10 @@
-#define _XOPEN_SOURCE 700
-#include <myclib/mysocket.h>
+#include "../socket/mysocket.h"
+#include <arpa/inet.h>
+#include <netdb.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 
 void test_socket1(void) {
 	sock_platform_init();
