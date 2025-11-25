@@ -7,6 +7,9 @@ project(
 
 cc = meson.get_compiler('c')
 
+# Add global posix feature macro
+add_global_arguments('-D_POSIX_C_SOURCE=200112L', language: 'c')
+
 # Sources without test files
 lib_src = files(
   'hashmap/myhashmap.c',
