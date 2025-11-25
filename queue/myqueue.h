@@ -69,4 +69,4 @@ int queue_get_rear(queue_s *queue, void *out);
  */
 void queue_free(queue_s *queue);
 
-#endif	// MYCLIB_QUEUE_H
+#endif // MYCLIB_QUEUE_H

@@ -6,7 +6,8 @@
 
 /* Returns the next power of two of a number */
 static size_t next_power_two(size_t len) {
-	if (len == 0) return 1;
+	if (len == 0)
+		return 1;
 
 	size_t p = 1;
 	while (p < len) {
