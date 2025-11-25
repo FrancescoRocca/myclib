@@ -1,38 +1,36 @@
 #ifndef MYCLIB_SOCKET_H
 #define MYCLIB_SOCKET_H
 
+#include <stddef.h>
+
 #ifdef _WIN32
-/* Windows */
-#define _WIN32_WINNT 0x0600
 #include <winsock2.h>
 #include <ws2tcpip.h>
+typedef int socket_t;
 #else
-/* Unix */
-
-#ifndef __USE_XOPEN2K
-#define __USE_XOPEN2K 1
-#endif
-
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <netinet/in.h>
 #include <sys/socket.h>
-#include <sys/types.h>
 #include <unistd.h>
-
+typedef int socket_t;
 #endif
 
-/* Run this before everything */
-int sock_platform_init();
+/* Initialize the socket system */
+int sock_platform_init(void);
 
-/* Use this to close a socket */
-int sock_close(int socket);
+/* Close a socket */
+int sock_close(socket_t socket);
 
-/* Read/Write all to socket */
-int sock_readall(int sockfd, void *buf, size_t bufsize);
-int sock_writeall(int socket, const void *buf, size_t n);
+/* Clean the socket system */
+int sock_platform_shutdown(void);
 
-/* Use at exit */
-int sock_platform_shutdown();
+/*
+ * Read 'bufsize' bytes from socket
+ * Returns the read bytes, -1 on failure, 0 connection closed without issues
+ */
+int sock_readall(socket_t sockfd, void *buf, size_t bufsize);
+
+/*
+ * Writes 'n' bytes to socket
+ */
+int sock_writeall(socket_t socket, const void *buf, size_t n);
 
 #endif
