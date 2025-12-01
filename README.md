@@ -15,13 +15,15 @@ All the features listed are Thread-safe.
 
 ## Installation
 
-Clone the repo, and then using `meson` install it:
+Clone the repo, cd into it and then install it using:
 
 ```
 $ meson setup build
 $ cd build
-$ meson install
+$ sudo ninja install
 ```
+
+To uninstall, simply run `sudo ninja uninstall`.
 
 ## Usage
 
