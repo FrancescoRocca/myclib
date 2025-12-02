@@ -1,6 +1,7 @@
 #ifndef MYCLIB_HASHMAP_H
 #define MYCLIB_HASHMAP_H
 
+#include <stdatomic.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <threads.h>
@@ -50,6 +51,7 @@ typedef void free_value_f(void *value);
 
 /**
  * @brief Main structure representing the hash map.
+ * Thread-safe for concurrent operations on different keys.
  */
 typedef struct hashmap {
 	hash_f *hash;					   /**< Hash function */
@@ -59,7 +61,7 @@ typedef struct hashmap {
 	size_t key_size;				   /**< Size in bytes of the key */
 	size_t value_size;				   /**< Size in bytes of the value */
 	bucket_s map[MYCLIB_HASHMAP_SIZE]; /**< Array of bucket chains */
-	size_t size;					   /* Hashmap size (number of keys) */
+	atomic_size_t size;				   /**< Hashmap size (number of keys) - atomic */
 	mtx_t *locks;					   /**< Mutex array */
 	size_t num_locks;				   /**< Number of mutex */
 } hashmap_s;
@@ -113,7 +115,7 @@ bool hm_set(hashmap_s *hashmap, void *key, void *value);
  * @param[in] hashmap Pointer to the hash map.
  * @param[in] key Pointer to the key to search for.
  * @return Pointer to the copy of the bucket or NULL on failure.
- * @note Free after use.
+ * @note Free after use with hm_free_bucket().
  */
 bucket_s *hm_get(hashmap_s *hashmap, void *key);
 
@@ -129,9 +131,36 @@ bucket_s *hm_get(hashmap_s *hashmap, void *key);
  */
 bool hm_remove(hashmap_s *hashmap, void *key);
 
+/**
+ * @brief Get the number of entries in the hash map.
+ *
+ * @param[in] hashmap Pointer to the hash map.
+ * @return Number of key-value pairs in the map.
+ */
 size_t hm_size(hashmap_s *hashmap);
+
+/**
+ * @brief Check if a key exists in the hash map.
+ *
+ * @param[in] hashmap Pointer to the hash map.
+ * @param[in] key Pointer to the key to search for.
+ * @return true if the key exists, false otherwise.
+ */
 bool hm_contains(hashmap_s *hashmap, void *key);
+
+/**
+ * @brief Iterate over all entries in the hash map.
+ *
+ * @param[in] hashmap Pointer to the hash map.
+ * @param[in] callback Function called for each bucket.
+ */
 void hm_foreach(hashmap_s *hashmap, void (*callback)(bucket_s *bucket));
+
+/**
+ * @brief Remove all entries from the hash map.
+ *
+ * @param[in] hashmap Pointer to the hash map.
+ */
 void hm_clear(hashmap_s *hashmap);
 
 #endif /* MYCLIB_HASHMAP_H */
