@@ -464,3 +464,112 @@ void hm_clear(hashmap_s *hashmap) {
 		mtx_unlock(&hashmap->locks[i]);
 	}
 }
+
+void **hm_get_keys(hashmap_s *hashmap, size_t *count) {
+	if (hashmap == NULL || count == NULL) {
+		return NULL;
+	}
+
+	/* Lock all mutexes */
+	for (size_t i = 0; i < hashmap->num_locks; ++i) {
+		mtx_lock(&hashmap->locks[i]);
+	}
+
+	size_t size = atomic_load(&hashmap->size);
+	*count = 0;
+
+	if (size == 0) {
+		for (size_t i = 0; i < hashmap->num_locks; ++i) {
+			mtx_unlock(&hashmap->locks[i]);
+		}
+		return NULL;
+	}
+
+	/* Allocate array for key pointers */
+	void **keys = malloc(sizeof(void *) * size);
+	if (keys == NULL) {
+		for (size_t i = 0; i < hashmap->num_locks; ++i) {
+			mtx_unlock(&hashmap->locks[i]);
+		}
+		return NULL;
+	}
+
+	size_t index = 0;
+
+	/* Iterate through all buckets */
+	for (size_t i = 0; i < MYCLIB_HASHMAP_SIZE && index < size; ++i) {
+		bucket_s *bucket = &hashmap->map[i];
+
+		if (bucket->key != NULL) {
+			keys[index] = malloc(hashmap->key_size);
+			if (keys[index] == NULL) {
+				/* Cleanup on failure */
+				for (size_t j = 0; j < index; ++j) {
+					if (hashmap->free_key != NULL) {
+						hashmap->free_key(keys[j]);
+					} else {
+						free(keys[j]);
+					}
+				}
+				free(keys);
+				for (size_t j = 0; j < hashmap->num_locks; ++j) {
+					mtx_unlock(&hashmap->locks[j]);
+				}
+				return NULL;
+			}
+			memcpy(keys[index], bucket->key, hashmap->key_size);
+			index++;
+		}
+
+		/* Iterate through chain */
+		bucket = bucket->next;
+		while (bucket != NULL && index < size) {
+			keys[index] = malloc(hashmap->key_size);
+			if (keys[index] == NULL) {
+				/* Cleanup on failure */
+				for (size_t j = 0; j < index; ++j) {
+					if (hashmap->free_key != NULL) {
+						hashmap->free_key(keys[j]);
+					} else {
+						free(keys[j]);
+					}
+				}
+				free(keys);
+				for (size_t j = 0; j < hashmap->num_locks; ++j) {
+					mtx_unlock(&hashmap->locks[j]);
+				}
+				return NULL;
+			}
+			memcpy(keys[index], bucket->key, hashmap->key_size);
+			index++;
+			bucket = bucket->next;
+		}
+	}
+
+	*count = index;
+
+	/* Unlock all mutexes */
+	for (size_t i = 0; i < hashmap->num_locks; ++i) {
+		mtx_unlock(&hashmap->locks[i]);
+	}
+
+	return keys;
+}
+
+void hm_free_keys(hashmap_s *hashmap, void **keys, size_t count) {
+	if (keys == NULL) {
+		return;
+	}
+
+	for (size_t i = 0; i < count; ++i) {
+		if (keys[i] != NULL) {
+			if (hashmap != NULL && hashmap->free_key != NULL) {
+				hashmap->free_key(keys[i]);
+			} else {
+				free(keys[i]);
+			}
+		}
+	}
+
+	free(keys);
+}

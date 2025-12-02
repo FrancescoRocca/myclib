@@ -163,4 +163,25 @@ void hm_foreach(hashmap_s *hashmap, void (*callback)(bucket_s *bucket));
  */
 void hm_clear(hashmap_s *hashmap);
 
+/**
+ * @brief Get all keys from the hash map.
+ *
+ * Returns an array of pointers to copies of all keys in the hashmap.
+ * The caller is responsible for freeing the array and each key.
+ *
+ * @param[in] hashmap Pointer to the hash map.
+ * @param[out] count Pointer to store the number of keys returned.
+ * @return Array of key pointers, or NULL on failure. Must be freed with hm_free_keys().
+ */
+void **hm_get_keys(hashmap_s *hashmap, size_t *count);
+
+/**
+ * @brief Free the array returned by hm_get_keys.
+ *
+ * @param[in] hashmap Pointer to the hash map (needed for free_key function).
+ * @param[in] keys Array of keys returned by hm_get_keys.
+ * @param[in] count Number of keys in the array.
+ */
+void hm_free_keys(hashmap_s *hashmap, void **keys, size_t count);
+
 #endif /* MYCLIB_HASHMAP_H */
