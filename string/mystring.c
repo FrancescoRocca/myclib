@@ -8,29 +8,6 @@
 #include <string.h>
 #include <threads.h>
 
-/* Initialize Thread-Specific Storage */
-
-static tss_t buffer_key;
-static once_flag buffer_once = ONCE_FLAG_INIT;
-
-typedef struct {
-	char *buf;	/**< Allocated buffer */
-	size_t cap; /**< Buffer's capacity */
-} tl_buffer_s;
-
-static void buffer_destructor(void *buf) {
-	tl_buffer_s *tb = (tl_buffer_s *)buf;
-	if (tb == NULL) {
-		return;
-	}
-	free(tb->buf);
-	free(tb);
-}
-
-static void buffer_key_init(void) {
-	tss_create(&buffer_key, buffer_destructor);
-}
-
 /* Returns the next power of two of a number */
 static size_t next_power_two(size_t len) {
 	if (len == 0)
@@ -227,65 +204,59 @@ size_t string_cap(string_s *string) {
 	return cap;
 }
 
+int string_lock(string_s *string) {
+	if (string == NULL) {
+		return -1;
+	}
+
+	if (mtx_lock(&string->lock) != thrd_success) {
+		return -1;
+	}
+
+	return 0;
+}
+
+int string_unlock(string_s *string) {
+	if (string == NULL) {
+		return -1;
+	}
+
+	if (mtx_unlock(&string->lock) != thrd_success) {
+		return -1;
+	}
+
+	return 0;
+}
+
 char *string_cstr(string_s *string) {
 	if (string == NULL || string->data == NULL) {
 		return NULL;
 	}
 
-	call_once(&buffer_once, buffer_key_init);
+	return string->data;
+}
+
+char *string_copy(string_s *string) {
+	if (string == NULL || string->data == NULL) {
+		return NULL;
+	}
 
 	if (mtx_lock(&string->lock) != thrd_success) {
 		return NULL;
 	}
 
-	size_t need = string->size + 1;
-
-	/* Retrieve thread local buffer */
-	tl_buffer_s *tb = (tl_buffer_s *)tss_get(buffer_key);
-	if (tb == NULL) {
-		/* Not found, make a new one */
-		tb = malloc(sizeof(tl_buffer_s));
-		if (tb == NULL) {
-			mtx_unlock(&string->lock);
-
-			return NULL;
-		}
-
-		tb->cap = next_power_two(need);
-		tb->buf = malloc(tb->cap);
-		if (tb->buf == NULL) {
-			free(tb);
-			mtx_unlock(&string->lock);
-
-			return NULL;
-		}
-
-		if (tss_set(buffer_key, tb) != thrd_success) {
-			free(tb->buf);
-			free(tb);
-			mtx_unlock(&string->lock);
-
-			return NULL;
-		}
-	} else if (tb->cap < need) {
-		/* Found, but we need a bigger buffer */
-		size_t newcap = next_power_two(need);
-		char *tmp = realloc(tb->buf, newcap);
-		if (tmp == NULL) {
-			mtx_unlock(&string->lock);
-
-			return NULL;
-		}
-
-		tb->buf = tmp;
-		tb->cap = newcap;
+	char *cpy = malloc(string->size + 1);
+	if (!cpy) {
+		mtx_unlock(&string->lock);
+		return NULL;
 	}
 
-	memcpy(tb->buf, string->data, need);
+	memcpy(cpy, string->data, string->size);
+	cpy[string->size] = '\0';
 
 	mtx_unlock(&string->lock);
 
-	return tb->buf;
+	return cpy;
 }
 
 int string_compare(string_s *s1, string_s *s2) {

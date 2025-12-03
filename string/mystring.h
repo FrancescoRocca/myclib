@@ -77,12 +77,40 @@ size_t string_cap(string_s *string);
  * @brief Get a pointer to a null-terminated C-string.
  *
  * @param string String to read.
- * @return Pointer to a thread-local buffer, or NULL on failure.
+ * @return Pointer to string->data.
  *
- * @note Valid until the next call in the same thread. Do NOT free the returned pointer.
- * Do NOT call more than once this function in a print function.
+ * @note See string_lock().
  */
 char *string_cstr(string_s *string);
+
+/**
+ * @brief Create a heap-allocated copy of the string content.
+ *
+ * @param string String to copy.
+ * @return Newly allocated null-terminated buffer, or NULL on failure.
+ *
+ * @note The caller is responsible for freeing the returned buffer with free().
+ * See string_lock().
+ */
+char *string_copy(string_s *string);
+
+/**
+ * @brief Lock the string for safe reading or writing.
+ *
+ * @param string String to lock.
+ * @return 0 on success, -1 on failure.
+ *
+ * @note Use this before calling string_cstr() if you want a stable pointer.
+ */
+int string_lock(string_s *string);
+
+/**
+ * @brief Unlock a previously locked string.
+ *
+ * @param string String to unlock.
+ * @return 0 on success, -1 on failure.
+ */
+int string_unlock(string_s *string);
 
 /**
  * @brief Compare two strings.
