@@ -90,7 +90,6 @@ char *string_cstr(string_s *string);
  * @return Newly allocated null-terminated buffer, or NULL on failure.
  *
  * @note The caller is responsible for freeing the returned buffer with free().
- * See string_lock().
  */
 char *string_copy(string_s *string);
 
