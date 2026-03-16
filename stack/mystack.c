@@ -21,6 +21,7 @@ stack_s *stack_new(size_t initial_capacity, size_t element_size) {
 	/* Allocate the vec data */
 	stack->data = vec_new(initial_capacity, element_size);
 	if (stack->data == NULL) {
+		mtx_destroy(&stack->lock);
 		free(stack);
 		return NULL;
 	}
@@ -71,7 +72,14 @@ void *stack_top(stack_s *stack) {
 		return NULL;
 	}
 
-	void *elem = vec_get(stack->data, stack->data->size - 1);
+	size_t size = vec_size(stack->data);
+	if (size == 0) {
+		mtx_unlock(&stack->lock);
+
+		return NULL;
+	}
+
+	void *elem = vec_get(stack->data, size - 1);
 
 	mtx_unlock(&stack->lock);
 
@@ -84,5 +92,6 @@ void stack_free(stack_s *stack) {
 	}
 
 	vec_free(stack->data);
+	mtx_destroy(&stack->lock);
 	free(stack);
 }
