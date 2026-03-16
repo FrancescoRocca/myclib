@@ -14,7 +14,6 @@ add_global_arguments('-D_POSIX_C_SOURCE=200112L', language: 'c')
 lib_src = files(
   'hashmap/myhashmap.c',
   'queue/myqueue.c',
-  'socket/mysocket.c',
   'set/myset.c',
   'stack/mystack.c',
   'string/mystring.c',
@@ -25,7 +24,6 @@ lib_src = files(
 test_src = files(
   'test/hashmap/hm1.c',
   'test/queue/queue1.c',
-  'test/socket/socket1.c',
   'test/set/set1.c',
   'test/stack/stack1.c',
   'test/string/str1.c',
@@ -35,11 +33,8 @@ test_src = files(
   'test/vector/vec1.c',
 )
 
-# Windows Socket lib
-winsock_dep = cc.find_library('ws2_32', required: false)
-
 # Include directories
-inc_dir = include_directories('string', 'queue', 'hashmap', 'vector', 'stack', 'socket', 'set')
+inc_dir = include_directories('string', 'queue', 'hashmap', 'vector', 'stack', 'set')
 if host_machine.system() == 'windows'
   win_inc_dir = include_directories('c:/include/')
 else
@@ -64,7 +59,6 @@ install_headers(
     'vector/myvector.h',
     'set/myset.h',
     'stack/mystack.h',
-    'socket/mysocket.h',
   ],
   subdir: 'myclib',
 )
