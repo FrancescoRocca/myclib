@@ -53,7 +53,7 @@ void test_hm1(void) {
 	/* Pass your custom hash, equal and free functions */
 	/* This hashmap will contain names as keys and a custom type as value */
 	size_t key_size = sizeof(char) * MAX_STR_LEN;
-	size_t value_size = sizeof(int) + sizeof(char) * MAX_STR_LEN;
+	size_t value_size = sizeof(struct my_custom_type);
 	hashmap_s *map =
 		hm_new(my_hash_func, my_equal_fun, my_free_key, my_free_value, key_size, value_size);
 	assert(map != NULL);
@@ -65,11 +65,13 @@ void test_hm1(void) {
 	strncpy(p1.favourite_brand, "Ferrari", sizeof(p1.favourite_brand));
 
 	/* Insert a new pair */
-	assert(hm_set(map, "John", &p1));
+	char john_key[MAX_STR_LEN] = {0};
+	strncpy(john_key, "John", sizeof(john_key) - 1);
+	assert(hm_set(map, john_key, &p1));
 
 	/* Retrieve the data */
 	/* Remember to free the value from the get function */
-	bucket_s *john = hm_get(map, "John");
+	bucket_s *john = hm_get(map, john_key);
 	assert(john != NULL);
 
 	char *name = (char *)john->key;
@@ -85,7 +87,7 @@ void test_hm1(void) {
 	hm_free_bucket(john);
 
 	/* Remove a key from hash map */
-	assert(hm_remove(map, "John"));
+	assert(hm_remove(map, john_key));
 
 	/* Deallocate */
 	hm_free(map);

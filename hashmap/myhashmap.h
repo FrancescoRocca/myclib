@@ -100,6 +100,8 @@ void hm_free_bucket(bucket_s *bucket);
  * If the key already exists, the old value is freed (if free_value_fn is provided)
  * and replaced with the new value. If the key doesn't exist, a new entry is created.
  * Both key and value are copied into the hashmap using memcpy.
+ * The caller must pass buffers that are readable for at least key_size/value_size bytes.
+ * For C-string keys, use a fixed-size key buffer (or set key_size to the exact copied size).
  *
  * @param[in] hashmap Pointer to the hash map.
  * @param[in] key Pointer to the key to insert (will be copied, must not be NULL).
