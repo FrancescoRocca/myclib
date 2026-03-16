@@ -15,6 +15,7 @@ lib_src = files(
   'hashmap/myhashmap.c',
   'queue/myqueue.c',
   'socket/mysocket.c',
+  'set/myset.c',
   'stack/mystack.c',
   'string/mystring.c',
   'vector/myvector.c',
@@ -25,6 +26,7 @@ test_src = files(
   'test/hashmap/hm1.c',
   'test/queue/queue1.c',
   'test/socket/socket1.c',
+  'test/set/set1.c',
   'test/stack/stack1.c',
   'test/string/str1.c',
   'test/string/str2.c',
@@ -37,7 +39,7 @@ test_src = files(
 winsock_dep = cc.find_library('ws2_32', required: false)
 
 # Include directories
-inc_dir = include_directories('string', 'queue', 'hashmap', 'vector', 'stack', 'socket')
+inc_dir = include_directories('string', 'queue', 'hashmap', 'vector', 'stack', 'socket', 'set')
 if host_machine.system() == 'windows'
   win_inc_dir = include_directories('c:/include/')
 else
@@ -60,6 +62,7 @@ install_headers(
     'queue/myqueue.h',
     'string/mystring.h',
     'vector/myvector.h',
+    'set/myset.h',
     'stack/mystack.h',
     'socket/mysocket.h',
   ],
@@ -67,10 +70,12 @@ install_headers(
 )
 
 # Test executable
-executable(
+testlib_exe = executable(
   'testlib',
-  lib_src + test_src,
+  test_src,
   include_directories: [inc_dir, win_inc_dir],
   dependencies: winsock_dep,
   link_with: myclib_lib,
 )
+
+test('testlib', testlib_exe)
