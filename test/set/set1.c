@@ -2,7 +2,7 @@
 
 #include <assert.h>
 
-void test_set1(void) {
+int main(void) {
 	set_s *set = set_new(sizeof(int));
 	assert(set != NULL);
 

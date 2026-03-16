@@ -1,7 +1,7 @@
 #include "../queue/myqueue.h"
 #include <assert.h>
 
-void test_queue1(void) {
+int main(void) {
 	/* Allocate a new queue */
 	queue_s *queue = queue_new(3, sizeof(int));
 	assert(queue != NULL);

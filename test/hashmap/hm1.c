@@ -48,7 +48,7 @@ void my_free_value(void *value) {
 	free(mct);
 }
 
-void test_hm1(void) {
+int main(void) {
 	/* Allocate a new hashmap */
 	/* Pass your custom hash, equal and free functions */
 	/* This hashmap will contain names as keys and a custom type as value */

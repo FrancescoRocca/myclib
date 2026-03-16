@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void test_str1(void) {
+int main(void) {
 	size_t length;
 	size_t capacity;
 	char *c_str;

@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-void test_stack1(void) {
+int main(void) {
 	stack_s *stack = stack_new(32, sizeof(int));
 	int num = 10;
 	stack_push(stack, &num);
