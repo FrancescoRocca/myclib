@@ -9,6 +9,7 @@ typedef struct my_elem {
 
 /* Functions used to iterate for each vector's element */
 static void multiply(size_t index, void *elem) {
+	(void)index;
 	my_elem_s *e = (my_elem_s *)elem;
 	e->age = e->age * 2;
 }
@@ -65,11 +66,39 @@ void test_vec1(void) {
 	vec_push(v, &last);
 	my_elem_s *lastv = (my_elem_s *)vec_pop(v);
 	free(lastv);
+	assert(vec_get(v, vec_size(v)) == NULL);
+	assert(vec_remove(v, vec_size(v)) == -1);
+
+	/* Remove from the middle and validate shifted content for elem_size > 1 */
+	assert(vec_remove(v, 1) == 0);
+	my_elem_s *shifted = (my_elem_s *)vec_get(v, 1);
+	assert(shifted != NULL);
+	assert(shifted->age == 19);
+	free(shifted);
+
+	my_elem_s replacement = {
+		.age = 40,
+		.name = "Updated",
+	};
+	assert(vec_set(v, 1, &replacement) == 0);
+	assert(vec_set(v, vec_size(v), &replacement) == -1);
+	my_elem_s *updated = (my_elem_s *)vec_get(v, 1);
+	assert(updated != NULL);
+	assert(updated->age == 40);
+	free(updated);
 
 	/* Iterate for each element */
 	vec_foreach(v, multiply);
 	/* Print each element */
 	// vec_foreach(v, print);
+
+	/* Shrink to fit current size and ensure data is still readable */
+	size_t before_shrink_size = vec_size(v);
+	assert(vec_shrink(v) == 0);
+	assert(vec_cap(v) == before_shrink_size);
+	my_elem_s *shrink_elem = (my_elem_s *)vec_get(v, 1);
+	assert(shrink_elem != NULL);
+	free(shrink_elem);
 
 	/* Sort */
 	vec_sort(v, my_cmp);
