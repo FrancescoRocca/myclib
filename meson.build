@@ -31,11 +31,19 @@ endif
 
 # Static library
 
+pkg = import('pkgconfig')
+
 myclib_lib = static_library(
     'myclib',
     lib_src,
     include_directories: inc_dir,
     install: true,
+)
+
+pkg.generate(
+    myclib_lib,
+    name: 'myclib',
+    description: 'My personal C std library.',
 )
 
 # Install headers
